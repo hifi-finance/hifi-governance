@@ -3,18 +3,18 @@ pragma experimental ABIEncoderV2;
 
 import "./SafeMath.sol";
 
-contract Uni {
+contract Hifi {
     /// @notice EIP-20 token name for this token
-    string public constant name = "Uniswap";
+    string public constant name = "Hifi Finance";
 
     /// @notice EIP-20 token symbol for this token
-    string public constant symbol = "UNI";
+    string public constant symbol = "HIFI";
 
     /// @notice EIP-20 token decimals for this token
     uint8 public constant decimals = 18;
 
     /// @notice Total number of tokens in circulation
-    uint256 public totalSupply = 1_000_000_000e18; // 1 billion Uni
+    uint256 public totalSupply = 1_000_000_000e18; // 1 billion Hifi
 
     /// @notice Address which may mint new tokens
     address public minter;
@@ -80,7 +80,7 @@ contract Uni {
     event Approval(address indexed owner, address indexed spender, uint256 amount);
 
     /**
-     * @notice Construct a new Uni token
+     * @notice Construct a new Hifi token
      * @param account The initial account to grant all the tokens
      * @param minter_ The account with minting ability
      * @param mintingAllowedAfter_ The timestamp after which minting may occur
@@ -89,8 +89,8 @@ contract Uni {
         address account,
         address minter_,
         uint256 mintingAllowedAfter_
-    ) public {
-        require(mintingAllowedAfter_ >= block.timestamp, "Uni::constructor: minting can only begin after deployment");
+    ) {
+        require(mintingAllowedAfter_ >= block.timestamp, "Hifi::constructor: minting can only begin after deployment");
 
         balances[account] = uint96(totalSupply);
         emit Transfer(address(0), account, totalSupply);
@@ -104,7 +104,7 @@ contract Uni {
      * @param minter_ The address of the new minter
      */
     function setMinter(address minter_) external {
-        require(msg.sender == minter, "Uni::setMinter: only the minter can change the minter address");
+        require(msg.sender == minter, "Hifi::setMinter: only the minter can change the minter address");
         emit MinterChanged(minter, minter_);
         minter = minter_;
     }
@@ -115,20 +115,20 @@ contract Uni {
      * @param rawAmount The number of tokens to be minted
      */
     function mint(address dst, uint256 rawAmount) external {
-        require(msg.sender == minter, "Uni::mint: only the minter can mint");
-        require(block.timestamp >= mintingAllowedAfter, "Uni::mint: minting not allowed yet");
-        require(dst != address(0), "Uni::mint: cannot transfer to the zero address");
+        require(msg.sender == minter, "Hifi::mint: only the minter can mint");
+        require(block.timestamp >= mintingAllowedAfter, "Hifi::mint: minting not allowed yet");
+        require(dst != address(0), "Hifi::mint: cannot transfer to the zero address");
 
         // record the mint
         mintingAllowedAfter = SafeMath.add(block.timestamp, minimumTimeBetweenMints);
 
         // mint the amount
-        uint96 amount = safe96(rawAmount, "Uni::mint: amount exceeds 96 bits");
-        require(amount <= SafeMath.div(SafeMath.mul(totalSupply, mintCap), 100), "Uni::mint: exceeded mint cap");
-        totalSupply = safe96(SafeMath.add(totalSupply, amount), "Uni::mint: totalSupply exceeds 96 bits");
+        uint96 amount = safe96(rawAmount, "Hifi::mint: amount exceeds 96 bits");
+        require(amount <= SafeMath.div(SafeMath.mul(totalSupply, mintCap), 100), "Hifi::mint: exceeded mint cap");
+        totalSupply = safe96(SafeMath.add(totalSupply, amount), "Hifi::mint: totalSupply exceeds 96 bits");
 
         // transfer the amount to the recipient
-        balances[dst] = add96(balances[dst], amount, "Uni::mint: transfer amount overflows");
+        balances[dst] = add96(balances[dst], amount, "Hifi::mint: transfer amount overflows");
         emit Transfer(address(0), dst, amount);
 
         // move delegates
@@ -158,7 +158,7 @@ contract Uni {
         if (rawAmount == uint256(-1)) {
             amount = uint96(-1);
         } else {
-            amount = safe96(rawAmount, "Uni::approve: amount exceeds 96 bits");
+            amount = safe96(rawAmount, "Hifi::approve: amount exceeds 96 bits");
         }
 
         allowances[msg.sender][spender] = amount;
@@ -190,7 +190,7 @@ contract Uni {
         if (rawAmount == uint256(-1)) {
             amount = uint96(-1);
         } else {
-            amount = safe96(rawAmount, "Uni::permit: amount exceeds 96 bits");
+            amount = safe96(rawAmount, "Hifi::permit: amount exceeds 96 bits");
         }
 
         bytes32 domainSeparator = keccak256(
@@ -201,9 +201,9 @@ contract Uni {
         );
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
         address signatory = ecrecover(digest, v, r, s);
-        require(signatory != address(0), "Uni::permit: invalid signature");
-        require(signatory == owner, "Uni::permit: unauthorized");
-        require(now <= deadline, "Uni::permit: signature expired");
+        require(signatory != address(0), "Hifi::permit: invalid signature");
+        require(signatory == owner, "Hifi::permit: unauthorized");
+        require(now <= deadline, "Hifi::permit: signature expired");
 
         allowances[owner][spender] = amount;
 
@@ -226,7 +226,7 @@ contract Uni {
      * @return Whether or not the transfer succeeded
      */
     function transfer(address dst, uint256 rawAmount) external returns (bool) {
-        uint96 amount = safe96(rawAmount, "Uni::transfer: amount exceeds 96 bits");
+        uint96 amount = safe96(rawAmount, "Hifi::transfer: amount exceeds 96 bits");
         _transferTokens(msg.sender, dst, amount);
         return true;
     }
@@ -245,13 +245,13 @@ contract Uni {
     ) external returns (bool) {
         address spender = msg.sender;
         uint96 spenderAllowance = allowances[src][spender];
-        uint96 amount = safe96(rawAmount, "Uni::approve: amount exceeds 96 bits");
+        uint96 amount = safe96(rawAmount, "Hifi::approve: amount exceeds 96 bits");
 
         if (spender != src && spenderAllowance != uint96(-1)) {
             uint96 newAllowance = sub96(
                 spenderAllowance,
                 amount,
-                "Uni::transferFrom: transfer amount exceeds spender allowance"
+                "Hifi::transferFrom: transfer amount exceeds spender allowance"
             );
             allowances[src][spender] = newAllowance;
 
@@ -293,9 +293,9 @@ contract Uni {
         bytes32 structHash = keccak256(abi.encode(DELEGATION_TYPEHASH, delegatee, nonce, expiry));
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
         address signatory = ecrecover(digest, v, r, s);
-        require(signatory != address(0), "Uni::delegateBySig: invalid signature");
-        require(nonce == nonces[signatory]++, "Uni::delegateBySig: invalid nonce");
-        require(now <= expiry, "Uni::delegateBySig: signature expired");
+        require(signatory != address(0), "Hifi::delegateBySig: invalid signature");
+        require(nonce == nonces[signatory]++, "Hifi::delegateBySig: invalid nonce");
+        require(now <= expiry, "Hifi::delegateBySig: signature expired");
         return _delegate(signatory, delegatee);
     }
 
@@ -317,7 +317,7 @@ contract Uni {
      * @return The number of votes the account had as of the given block
      */
     function getPriorVotes(address account, uint256 blockNumber) public view returns (uint96) {
-        require(blockNumber < block.number, "Uni::getPriorVotes: not yet determined");
+        require(blockNumber < block.number, "Hifi::getPriorVotes: not yet determined");
 
         uint32 nCheckpoints = numCheckpoints[account];
         if (nCheckpoints == 0) {
@@ -365,11 +365,11 @@ contract Uni {
         address dst,
         uint96 amount
     ) internal {
-        require(src != address(0), "Uni::_transferTokens: cannot transfer from the zero address");
-        require(dst != address(0), "Uni::_transferTokens: cannot transfer to the zero address");
+        require(src != address(0), "Hifi::_transferTokens: cannot transfer from the zero address");
+        require(dst != address(0), "Hifi::_transferTokens: cannot transfer to the zero address");
 
-        balances[src] = sub96(balances[src], amount, "Uni::_transferTokens: transfer amount exceeds balance");
-        balances[dst] = add96(balances[dst], amount, "Uni::_transferTokens: transfer amount overflows");
+        balances[src] = sub96(balances[src], amount, "Hifi::_transferTokens: transfer amount exceeds balance");
+        balances[dst] = add96(balances[dst], amount, "Hifi::_transferTokens: transfer amount overflows");
         emit Transfer(src, dst, amount);
 
         _moveDelegates(delegates[src], delegates[dst], amount);
@@ -384,14 +384,14 @@ contract Uni {
             if (srcRep != address(0)) {
                 uint32 srcRepNum = numCheckpoints[srcRep];
                 uint96 srcRepOld = srcRepNum > 0 ? checkpoints[srcRep][srcRepNum - 1].votes : 0;
-                uint96 srcRepNew = sub96(srcRepOld, amount, "Uni::_moveVotes: vote amount underflows");
+                uint96 srcRepNew = sub96(srcRepOld, amount, "Hifi::_moveVotes: vote amount underflows");
                 _writeCheckpoint(srcRep, srcRepNum, srcRepOld, srcRepNew);
             }
 
             if (dstRep != address(0)) {
                 uint32 dstRepNum = numCheckpoints[dstRep];
                 uint96 dstRepOld = dstRepNum > 0 ? checkpoints[dstRep][dstRepNum - 1].votes : 0;
-                uint96 dstRepNew = add96(dstRepOld, amount, "Uni::_moveVotes: vote amount overflows");
+                uint96 dstRepNew = add96(dstRepOld, amount, "Hifi::_moveVotes: vote amount overflows");
                 _writeCheckpoint(dstRep, dstRepNum, dstRepOld, dstRepNew);
             }
         }
@@ -403,7 +403,7 @@ contract Uni {
         uint96 oldVotes,
         uint96 newVotes
     ) internal {
-        uint32 blockNumber = safe32(block.number, "Uni::_writeCheckpoint: block number exceeds 32 bits");
+        uint32 blockNumber = safe32(block.number, "Hifi::_writeCheckpoint: block number exceeds 32 bits");
 
         if (nCheckpoints > 0 && checkpoints[delegatee][nCheckpoints - 1].fromBlock == blockNumber) {
             checkpoints[delegatee][nCheckpoints - 1].votes = newVotes;

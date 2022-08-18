@@ -7,13 +7,13 @@ import "./GovernorBravoInterfaces.sol";
 
 contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoEvents {
     /// @notice The name of this contract
-    string public constant name = "Ampleforth Governor Bravo";
+    string public constant name = "Hifi Governor Bravo";
 
     /// @notice The minimum setable proposal threshold
-    uint256 public constant MIN_PROPOSAL_THRESHOLD = 75000e18; // 75,000 Forth
+    uint256 public constant MIN_PROPOSAL_THRESHOLD = 75000e18; // 75,000 Hifi
 
     /// @notice The maximum setable proposal threshold
-    uint256 public constant MAX_PROPOSAL_THRESHOLD = 300000e18; // 300,000 Forth
+    uint256 public constant MAX_PROPOSAL_THRESHOLD = 300000e18; // 300,000 Hifi
 
     /// @notice The minimum setable voting period
     uint256 public constant MIN_VOTING_PERIOD = 5760; // About 24 hours
@@ -28,7 +28,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
     uint256 public constant MAX_VOTING_DELAY = 40320; // About 1 week
 
     /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
-    uint256 public constant quorumVotes = 600000e18; // 600,000 = 4% of Forth
+    uint256 public constant quorumVotes = 600000e18; // 600,000 = 4% of Hifi
 
     /// @notice The maximum number of actions that can be included in a proposal
     uint256 public constant proposalMaxOperations = 10; // 10 actions
@@ -41,16 +41,16 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
     bytes32 public constant BALLOT_TYPEHASH = keccak256("Ballot(uint256 proposalId,uint8 support)");
 
     /**
-     * @notice Used to initialize the contract during delegator contructor
+     * @notice Used to initialize the contract during delegator constructor
      * @param timelock_ The address of the Timelock
-     * @param forth_ The address of the FORTH token
+     * @param hifi_ The address of the Hifi token
      * @param votingPeriod_ The initial voting period
      * @param votingDelay_ The initial voting delay
      * @param proposalThreshold_ The initial proposal threshold
      */
     function initialize(
         address timelock_,
-        address forth_,
+        address hifi_,
         uint256 votingPeriod_,
         uint256 votingDelay_,
         uint256 proposalThreshold_
@@ -58,7 +58,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         require(address(timelock) == address(0), "GovernorBravo::initialize: can only initialize once");
         require(msg.sender == admin, "GovernorBravo::initialize: admin only");
         require(timelock_ != address(0), "GovernorBravo::initialize: invalid timelock address");
-        require(forth_ != address(0), "GovernorBravo::initialize: invalid forth address");
+        require(hifi_ != address(0), "GovernorBravo::initialize: invalid hifi address");
         require(
             votingPeriod_ >= MIN_VOTING_PERIOD && votingPeriod_ <= MAX_VOTING_PERIOD,
             "GovernorBravo::initialize: invalid voting period"
@@ -74,7 +74,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
 
         timelock = TimelockInterface(timelock_);
         timelock.acceptAdmin();
-        forth = ForthInterface(forth_);
+        hifi = HifiInterface(hifi_);
         votingPeriod = votingPeriod_;
         votingDelay = votingDelay_;
         proposalThreshold = proposalThreshold_;
@@ -97,7 +97,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         string memory description
     ) public returns (uint256) {
         require(
-            forth.getPriorVotes(msg.sender, sub256(block.number, 1)) > proposalThreshold,
+            hifi.getPriorVotes(msg.sender, sub256(block.number, 1)) > proposalThreshold,
             "GovernorBravo::propose: proposer votes below proposal threshold"
         );
         require(
@@ -231,7 +231,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         Proposal storage proposal = proposals[proposalId];
         require(
             msg.sender == proposal.proposer ||
-                forth.getPriorVotes(proposal.proposer, sub256(block.number, 1)) < proposalThreshold,
+                hifi.getPriorVotes(proposal.proposer, sub256(block.number, 1)) < proposalThreshold,
             "GovernorBravo::cancel: proposer above threshold"
         );
 
@@ -369,7 +369,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         Proposal storage proposal = proposals[proposalId];
         Receipt storage receipt = proposal.receipts[voter];
         require(receipt.hasVoted == false, "GovernorBravo::castVoteInternal: voter already voted");
-        uint96 votes = forth.getPriorVotes(voter, proposal.startBlock);
+        uint96 votes = hifi.getPriorVotes(voter, proposal.startBlock);
 
         if (support == 0) {
             proposal.againstVotes = add256(proposal.againstVotes, votes);
