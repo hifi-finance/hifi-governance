@@ -1,7 +1,5 @@
-pragma solidity ^0.5.16;
-pragma experimental ABIEncoderV2;
-
-import "./SafeMath.sol";
+// SPDX-License-Identifier: BSD-3-Clause
+pragma solidity ^0.8.15;
 
 contract Hifi {
     /// @notice EIP-20 token name for this token
@@ -120,12 +118,12 @@ contract Hifi {
         require(dst != address(0), "Hifi::mint: cannot transfer to the zero address");
 
         // record the mint
-        mintingAllowedAfter = SafeMath.add(block.timestamp, minimumTimeBetweenMints);
+        mintingAllowedAfter = block.timestamp + minimumTimeBetweenMints;
 
         // mint the amount
         uint96 amount = safe96(rawAmount, "Hifi::mint: amount exceeds 96 bits");
-        require(amount <= SafeMath.div(SafeMath.mul(totalSupply, mintCap), 100), "Hifi::mint: exceeded mint cap");
-        totalSupply = safe96(SafeMath.add(totalSupply, amount), "Hifi::mint: totalSupply exceeds 96 bits");
+        require(amount <= (totalSupply * mintCap) / 100, "Hifi::mint: exceeded mint cap");
+        totalSupply = safe96(totalSupply + amount, "Hifi::mint: totalSupply exceeds 96 bits");
 
         // transfer the amount to the recipient
         balances[dst] = add96(balances[dst], amount, "Hifi::mint: transfer amount overflows");
@@ -155,8 +153,8 @@ contract Hifi {
      */
     function approve(address spender, uint256 rawAmount) external returns (bool) {
         uint96 amount;
-        if (rawAmount == uint256(-1)) {
-            amount = uint96(-1);
+        if (rawAmount == type(uint256).max) {
+            amount = type(uint96).max;
         } else {
             amount = safe96(rawAmount, "Hifi::approve: amount exceeds 96 bits");
         }
@@ -187,8 +185,8 @@ contract Hifi {
         bytes32 s
     ) external {
         uint96 amount;
-        if (rawAmount == uint256(-1)) {
-            amount = uint96(-1);
+        if (rawAmount == type(uint256).max) {
+            amount = type(uint96).max;
         } else {
             amount = safe96(rawAmount, "Hifi::permit: amount exceeds 96 bits");
         }
@@ -203,7 +201,7 @@ contract Hifi {
         address signatory = ecrecover(digest, v, r, s);
         require(signatory != address(0), "Hifi::permit: invalid signature");
         require(signatory == owner, "Hifi::permit: unauthorized");
-        require(now <= deadline, "Hifi::permit: signature expired");
+        require(block.timestamp <= deadline, "Hifi::permit: signature expired");
 
         allowances[owner][spender] = amount;
 
@@ -247,7 +245,7 @@ contract Hifi {
         uint96 spenderAllowance = allowances[src][spender];
         uint96 amount = safe96(rawAmount, "Hifi::approve: amount exceeds 96 bits");
 
-        if (spender != src && spenderAllowance != uint96(-1)) {
+        if (spender != src && spenderAllowance != type(uint96).max) {
             uint96 newAllowance = sub96(
                 spenderAllowance,
                 amount,
@@ -295,7 +293,7 @@ contract Hifi {
         address signatory = ecrecover(digest, v, r, s);
         require(signatory != address(0), "Hifi::delegateBySig: invalid signature");
         require(nonce == nonces[signatory]++, "Hifi::delegateBySig: invalid nonce");
-        require(now <= expiry, "Hifi::delegateBySig: signature expired");
+        require(block.timestamp <= expiry, "Hifi::delegateBySig: signature expired");
         return _delegate(signatory, delegatee);
     }
 
@@ -444,7 +442,7 @@ contract Hifi {
         return a - b;
     }
 
-    function getChainId() internal pure returns (uint256) {
+    function getChainId() internal view returns (uint256) {
         uint256 chainId;
         assembly {
             chainId := chainid()
