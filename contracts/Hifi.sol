@@ -166,6 +166,52 @@ contract Hifi {
     }
 
     /**
+     * @notice Destroys `amount` tokens from the caller
+     * @param rawAmount The number of tokens to burn
+     */
+    function burn(uint256 rawAmount) external {
+        uint96 amount = safe96(rawAmount, "Hifi::burn: rawAmount exceeds 96 bits");
+        _burn(msg.sender, amount);
+    }
+
+    /**
+     * @notice Destroys `amount` tokens from `account`, deducting from the caller's allowance
+     * @param account The address of the account to burn from
+     * @param rawAmount The number of tokens to burn
+     */
+    function burnFrom(address account, uint256 rawAmount) external {
+        uint96 amount = safe96(rawAmount, "Hifi::burnFrom: rawAmount exceeds 96 bits");
+
+        uint96 decreasedAllowance = sub96(
+            allowances[account][msg.sender],
+            amount,
+            "Hifi::burnFrom: amount exceeds allowance"
+        );
+        allowances[account][msg.sender] = decreasedAllowance;
+        emit Approval(account, msg.sender, decreasedAllowance);
+
+        _burn(account, amount);
+    }
+
+    /**
+     * @notice Destroys `amount` tokens from `account`, reducing the total supply
+     * @param account The address of the account to burn from
+     * @param amount The number of tokens to burn
+     */
+    function _burn(address account, uint96 amount) internal {
+        require(account != address(0), "Hifi::_burn: burn from the zero address");
+
+        uint96 supply = safe96(totalSupply, "Hifi::_burn: old supply exceeds 96 bits");
+        totalSupply = sub96(supply, amount, "Hifi::_burn: amount exceeds totalSupply");
+
+        balances[account] = sub96(balances[account], amount, "Hifi::_burn: transfer amount overflows");
+        emit Transfer(account, address(0), amount);
+
+        // move delegates
+        _moveDelegates(delegates[account], address(0), amount);
+    }
+
+    /**
      * @notice Triggers an approval from owner to spends
      * @param owner The address to approve from
      * @param spender The address to be approved
