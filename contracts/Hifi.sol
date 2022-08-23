@@ -17,15 +17,6 @@ contract Hifi {
     /// @notice Address which may mint new tokens
     address public minter;
 
-    /// @notice The timestamp after which minting may occur
-    uint256 public mintingAllowedAfter;
-
-    /// @notice Minimum time between mints
-    uint32 public constant minimumTimeBetweenMints = 1 days * 365;
-
-    /// @notice Cap on the percentage of totalSupply that can be minted at each mint
-    uint8 public constant mintCap = 2;
-
     /// @notice Allowance amounts on behalf of others
     mapping(address => mapping(address => uint96)) internal allowances;
 
@@ -81,20 +72,12 @@ contract Hifi {
      * @notice Construct a new Hifi token
      * @param account The initial account to grant all the tokens
      * @param minter_ The account with minting ability
-     * @param mintingAllowedAfter_ The timestamp after which minting may occur
      */
-    constructor(
-        address account,
-        address minter_,
-        uint256 mintingAllowedAfter_
-    ) {
-        require(mintingAllowedAfter_ >= block.timestamp, "Hifi::constructor: minting can only begin after deployment");
-
+    constructor(address account, address minter_) {
         balances[account] = uint96(totalSupply);
         emit Transfer(address(0), account, totalSupply);
         minter = minter_;
         emit MinterChanged(address(0), minter);
-        mintingAllowedAfter = mintingAllowedAfter_;
     }
 
     /**
@@ -114,23 +97,26 @@ contract Hifi {
      */
     function mint(address dst, uint256 rawAmount) external {
         require(msg.sender == minter, "Hifi::mint: only the minter can mint");
-        require(block.timestamp >= mintingAllowedAfter, "Hifi::mint: minting not allowed yet");
-        require(dst != address(0), "Hifi::mint: cannot transfer to the zero address");
+        uint96 amount = safe96(rawAmount, "Hifi::mint: rawAmount exceeds 96 bits");
+        _mint(dst, amount);
+    }
 
-        // record the mint
-        mintingAllowedAfter = block.timestamp + minimumTimeBetweenMints;
+    /**
+     * @notice Mints `amount` tokens to `account`, increasing the total supply
+     * @param account The address of the account to mint to
+     * @param amount The number of tokens to mint
+     */
+    function _mint(address account, uint96 amount) internal {
+        require(account != address(0), "Hifi::_mint: mint to the zero address");
 
-        // mint the amount
-        uint96 amount = safe96(rawAmount, "Hifi::mint: amount exceeds 96 bits");
-        require(amount <= (totalSupply * mintCap) / 100, "Hifi::mint: exceeded mint cap");
-        totalSupply = safe96(totalSupply + amount, "Hifi::mint: totalSupply exceeds 96 bits");
+        uint96 supply = safe96(totalSupply, "Hifi::_mint: old supply exceeds 96 bits");
+        totalSupply = add96(supply, amount, "Hifi::_mint: amount exceeds totalSupply");
 
-        // transfer the amount to the recipient
-        balances[dst] = add96(balances[dst], amount, "Hifi::mint: transfer amount overflows");
-        emit Transfer(address(0), dst, amount);
+        balances[account] = add96(balances[account], amount, "Hifi::_mint: transfer amount overflows");
+        emit Transfer(address(0), account, amount);
 
         // move delegates
-        _moveDelegates(address(0), delegates[dst], amount);
+        _moveDelegates(delegates[account], delegates[account], amount);
     }
 
     /**
