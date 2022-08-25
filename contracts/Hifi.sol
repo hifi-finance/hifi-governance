@@ -116,7 +116,7 @@ contract Hifi {
         emit Transfer(address(0), account, amount);
 
         // move delegates
-        _moveDelegates(delegates[account], delegates[account], amount);
+        _moveDelegates(address(0), delegates[account], amount);
     }
 
     /**
