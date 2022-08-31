@@ -14,7 +14,6 @@
 **/.coverage_contracts
 **/dist
 **/node_modules
-**/src/types
 
 # files
 *.env
@@ -24,3 +23,18 @@ coverage.json
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# types
+src/types/*
+!src/types/common.ts
+!src/types/Hifi.ts
+!src/types/GovernorBravoDelegate.ts
+!src/types/GovernorBravoDelegator.ts
+!src/types/Timelock.ts
+
+# factories
+src/types/factories/*
+!src/types/factories/Hifi__factory.ts
+!src/types/factories/GovernorBravoDelegate__factory.ts
+!src/types/factories/GovernorBravoDelegator__factory.ts
+!src/types/factories/Timelock__factory.ts
