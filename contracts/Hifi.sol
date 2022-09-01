@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.15;
 
+import "@prb/contracts/token/erc20/IERC20.sol";
+
 contract Hifi {
     /// @notice EIP-20 token name for this token
     string public constant name = "Hifi Finance";
@@ -16,6 +18,15 @@ contract Hifi {
 
     /// @notice Address which may mint new tokens
     address public minter;
+
+    /// @notice The exchange rate between HIFI and MFT.
+    uint256 public hifiMftRatio;
+
+    /// @notice Amount of MFT migrated in total.
+    uint256 public totalMftSwaped;
+
+    /// @notice The Erc20 contract for MFT.
+    IERC20 public mft;
 
     /// @notice Allowance amounts on behalf of others
     mapping(address => mapping(address => uint96)) internal allowances;
@@ -68,16 +79,26 @@ contract Hifi {
     /// @notice The standard EIP-20 approval event
     event Approval(address indexed owner, address indexed spender, uint256 amount);
 
+    /// @notice An event thats emitted when a mft token is swaped fot hifi
+    event Swap(address indexed sender, uint256 mftAmount, uint256 hifiAount);
+
     /**
      * @notice Construct a new Hifi token
      * @param account The initial account to grant all the tokens
      * @param minter_ The account with minting ability
      */
-    constructor(address account, address minter_) {
+    constructor(
+        address account,
+        address minter_,
+        IERC20 mft_,
+        uint256 hifiMftRatio_
+    ) {
         balances[account] = uint96(totalSupply);
         emit Transfer(address(0), account, totalSupply);
         minter = minter_;
         emit MinterChanged(address(0), minter);
+        mft = mft_;
+        hifiMftRatio = hifiMftRatio_;
     }
 
     /**
@@ -378,6 +399,24 @@ contract Hifi {
             }
         }
         return checkpoints[account][lower].votes;
+    }
+
+    function swap(uint256 mftAmount) external {
+        require(mftAmount != 0, "Hifi::swap: swap amount can't be zero");
+        require(
+            mft.allowance(msg.sender, address(this)) >= mftAmount,
+            "Hifi::swap:  swap amount exceeds spender allowance"
+        );
+
+        uint256 hifiAmount = mftAmount / hifiMftRatio;
+        totalMftSwaped = totalMftSwaped + mftAmount;
+
+        require(mft.transferFrom(msg.sender, address(0), mftAmount), "Hifi::swap: mft transfer from sender failed");
+
+        uint96 amount = safe96(hifiAmount, "Hifi::swap: swap exceeds 96 bits");
+        _mint(msg.sender, amount);
+
+        emit Swap(msg.sender, mftAmount, amount);
     }
 
     function _delegate(address delegator, address delegatee) internal {
