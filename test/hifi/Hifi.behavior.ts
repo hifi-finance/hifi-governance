@@ -23,6 +23,91 @@ export function shouldBehaveLikeHifi(): void {
     });
   });
 
+  describe("burn", function () {
+    beforeEach(async function () {
+      this.supply = await this.hifi.totalSupply();
+    });
+
+    it("burn 0", async function () {
+      let balanceBefore = await this.hifi.balanceOf(this.signers.admin.address);
+      await this.hifi.connect(this.signers.admin).burn(0);
+      expect(await this.hifi.balanceOf(this.signers.admin.address)).to.be.eq(balanceBefore);
+      expect(await this.hifi.totalSupply()).to.be.eq(this.supply);
+    });
+
+    it("burn non-zero", async function () {
+      const balanceBefore = await this.hifi.balanceOf(this.signers.admin.address);
+      await this.hifi.connect(this.signers.admin).burn(1);
+      expect(await this.hifi.balanceOf(this.signers.admin.address)).to.be.eq(balanceBefore.sub(1));
+      expect(await this.hifi.totalSupply()).to.be.eq(this.supply.sub(1));
+    });
+
+    it("burn > totalSupply", async function () {
+      await expect(this.hifi.connect(this.signers.admin).burn(this.supply.add(2))).to.be.revertedWith(
+        "Hifi::_burn: amount exceeds totalSupply",
+      );
+    });
+
+    it("burn > balance", async function () {
+      await this.hifi.connect(this.signers.admin).transfer(this.signers.alice.address, 100);
+      const balanceBefore = await this.hifi.balanceOf(this.signers.admin.address);
+      await expect(this.hifi.connect(this.signers.admin).burn(balanceBefore.add(1))).to.be.revertedWith(
+        "Hifi::_burn: transfer amount overflows",
+      );
+    });
+  });
+
+  describe("burnFrom", function () {
+    beforeEach(async function () {
+      this.supply = await this.hifi.totalSupply();
+    });
+
+    it("burn 0", async function () {
+      let balanceBefore = await this.hifi.balanceOf(this.signers.admin.address);
+      await this.hifi.connect(this.signers.alice).burnFrom(this.signers.admin.address, 0);
+      expect(await this.hifi.balanceOf(this.signers.admin.address)).to.be.eq(balanceBefore);
+      expect(await this.hifi.totalSupply()).to.be.eq(this.supply);
+    });
+
+    it("burn non-zero", async function () {
+      const balanceBefore = await this.hifi.balanceOf(this.signers.admin.address);
+      await this.hifi.connect(this.signers.admin).approve(this.signers.alice.address, 100);
+      await this.hifi.connect(this.signers.alice).burnFrom(this.signers.admin.address, 1);
+      expect(await this.hifi.balanceOf(this.signers.admin.address)).to.be.eq(balanceBefore.sub(1));
+      expect(await this.hifi.totalSupply()).to.be.eq(this.supply.sub(1));
+    });
+
+    it("burn > approval", async function () {
+      await this.hifi.connect(this.signers.admin).approve(this.signers.alice.address, 100);
+      await expect(this.hifi.connect(this.signers.alice).burnFrom(this.signers.admin.address, 101)).to.be.revertedWith(
+        "Hifi::burnFrom: amount exceeds allowance",
+      );
+    });
+
+    it("burn > totalSupply", async function () {
+      const balanceBefore = await this.hifi.balanceOf(this.signers.admin.address);
+      await this.hifi.connect(this.signers.admin).approve(this.signers.alice.address, balanceBefore.add(1));
+      await expect(
+        this.hifi.connect(this.signers.alice).burnFrom(this.signers.admin.address, balanceBefore.add(1)),
+      ).to.be.revertedWith("Hifi::_burn: amount exceeds totalSupply");
+    });
+
+    it("burn > balance", async function () {
+      await this.hifi.connect(this.signers.admin).transfer(this.signers.alice.address, 100);
+      const balanceBefore = await this.hifi.balanceOf(this.signers.admin.address);
+      await this.hifi.connect(this.signers.admin).approve(this.signers.alice.address, balanceBefore.add(1));
+      await expect(
+        this.hifi.connect(this.signers.alice).burnFrom(this.signers.admin.address, balanceBefore.add(1)),
+      ).to.be.revertedWith("Hifi::_burn: transfer amount overflows");
+    });
+
+    it("Zero Address", async function () {
+      await expect(
+        this.hifi.connect(this.signers.admin).burnFrom("0x0000000000000000000000000000000000000000", 0),
+      ).to.be.revertedWith("Hifi::_burn: burn from the zero address");
+    });
+  });
+
   describe("numCheckpoints", function () {
     it("returns the number of checkpoints for a delegate", async function () {
       await this.hifi.transfer(this.signers.carol.address, 100); //give an account a few tokens for readability
