@@ -185,6 +185,56 @@ export function shouldBehaveLikeHifi(): void {
     });
   });
 
+  describe("setMinter", async function () {
+    describe("msg.sender == minter", function () {
+      it("succeeds", async function () {
+        await expect(this.hifi.setMinter(this.signers.alice.address))
+          .to.emit(this.hifi, "MinterChanged")
+          .withArgs(this.signers.admin.address, this.signers.alice.address);
+        expect(await this.hifi.minter()).to.be.equal(this.signers.alice.address);
+      });
+    });
+
+    describe("msg.sender != minter", function () {
+      it("reverts", async function () {
+        await expect(this.hifi.connect(this.signers.alice).setMinter(this.signers.alice.address)).to.be.revertedWith(
+          "Hifi::setMinter: only the minter can change the minter address",
+        );
+      });
+    });
+  });
+
+  describe("mint", async function () {
+    describe("dst == address(0)", function () {
+      it("reverts", async function () {
+        await expect(this.hifi.mint(constants.AddressZero, 10)).to.be.revertedWith(
+          "Hifi::_mint: mint to the zero address",
+        );
+      });
+    });
+
+    describe("dst != address(0)", function () {
+      describe("msg.sender == minter", function () {
+        it("succeeds", async function () {
+          const totalSupplyBefore = await this.hifi.totalSupply();
+          await expect(this.hifi.mint(this.signers.alice.address, 10))
+            .to.emit(this.hifi, "Transfer")
+            .withArgs(constants.AddressZero, this.signers.alice.address, 10);
+          expect(await this.hifi.balanceOf(this.signers.alice.address)).to.be.equal(10);
+          expect(await this.hifi.totalSupply()).to.be.equal(totalSupplyBefore.add(10));
+        });
+      });
+
+      describe("msg.sender != minter", function () {
+        it("reverts", async function () {
+          await expect(this.hifi.connect(this.signers.alice).mint(this.signers.alice.address, 10)).to.be.revertedWith(
+            "Hifi::mint: only the minter can mint",
+          );
+        });
+      });
+    });
+  });
+
   describe("permit", async function () {
     it("succeeds", async function () {
       const { chainId } = await ethers.provider.getNetwork();
