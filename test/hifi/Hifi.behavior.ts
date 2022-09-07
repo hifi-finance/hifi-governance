@@ -235,6 +235,69 @@ export function shouldBehaveLikeHifi(): void {
     });
   });
 
+  describe("delegate", async function () {
+    it("nested delegation", async function () {
+      await this.hifi.transfer(this.signers.alice.address, parseEther("1"));
+      await this.hifi.transfer(this.signers.bob.address, parseEther("2"));
+
+      let currectVotes0 = await this.hifi.getCurrentVotes(this.signers.alice.address);
+      let currectVotes1 = await this.hifi.getCurrentVotes(this.signers.bob.address);
+      expect(currectVotes0).to.be.eq(0);
+      expect(currectVotes1).to.be.eq(0);
+
+      await this.hifi.connect(this.signers.alice).delegate(this.signers.bob.address);
+      currectVotes1 = await this.hifi.getCurrentVotes(this.signers.bob.address);
+      expect(currectVotes1).to.be.eq(parseEther("1"));
+
+      await this.hifi.connect(this.signers.bob).delegate(this.signers.bob.address);
+      currectVotes1 = await this.hifi.getCurrentVotes(this.signers.bob.address);
+      expect(currectVotes1).to.be.eq(parseEther("1").add(parseEther("2")));
+
+      await this.hifi.connect(this.signers.bob).delegate(this.signers.admin.address);
+      currectVotes1 = await this.hifi.getCurrentVotes(this.signers.bob.address);
+      expect(currectVotes1).to.be.eq(parseEther("1"));
+    });
+  });
+
+  describe("delegateBySig", async function () {
+    it("succeeds", async function () {
+      const { chainId } = await ethers.provider.getNetwork();
+      const domain = {
+        name: "Hifi Finance",
+        chainId: chainId,
+        verifyingContract: this.hifi.address,
+      };
+      const types = {
+        Delegation: [
+          { name: "delegatee", type: "address" },
+          { name: "nonce", type: "uint256" },
+          { name: "expiry", type: "uint256" },
+        ],
+      };
+
+      const delegatee = this.signers.bob.address;
+      const nonce = await this.hifi.nonces(this.signers.admin.address);
+      const expiry = constants.MaxUint256;
+
+      const value = {
+        delegatee,
+        nonce,
+        expiry,
+      };
+
+      const signature = await this.signers.admin._signTypedData(domain, types, value);
+      const { v, r, s } = ethers.utils.splitSignature(signature);
+
+      expect(await this.hifi.getCurrentVotes(this.signers.bob.address)).to.be.eq(0);
+
+      await this.hifi
+        .connect(this.signers.david)
+        .delegateBySig(this.signers.bob.address, nonce, expiry, v, utils.hexlify(r), utils.hexlify(s));
+
+      expect(await this.hifi.getCurrentVotes(this.signers.bob.address)).to.be.eq(parseEther("1000000000"));
+    });
+  });
+
   describe("permit", async function () {
     it("succeeds", async function () {
       const { chainId } = await ethers.provider.getNetwork();
@@ -274,28 +337,6 @@ export function shouldBehaveLikeHifi(): void {
       expect(await this.hifi.nonces(owner)).to.eq(1);
 
       await this.hifi.connect(this.signers.alice).transferFrom(owner, spender, amount);
-    });
-
-    it("nested delegation", async function () {
-      await this.hifi.transfer(this.signers.alice.address, parseEther("1"));
-      await this.hifi.transfer(this.signers.bob.address, parseEther("2"));
-
-      let currectVotes0 = await this.hifi.getCurrentVotes(this.signers.alice.address);
-      let currectVotes1 = await this.hifi.getCurrentVotes(this.signers.bob.address);
-      expect(currectVotes0).to.be.eq(0);
-      expect(currectVotes1).to.be.eq(0);
-
-      await this.hifi.connect(this.signers.alice).delegate(this.signers.bob.address);
-      currectVotes1 = await this.hifi.getCurrentVotes(this.signers.bob.address);
-      expect(currectVotes1).to.be.eq(parseEther("1"));
-
-      await this.hifi.connect(this.signers.bob).delegate(this.signers.bob.address);
-      currectVotes1 = await this.hifi.getCurrentVotes(this.signers.bob.address);
-      expect(currectVotes1).to.be.eq(parseEther("1").add(parseEther("2")));
-
-      await this.hifi.connect(this.signers.bob).delegate(this.signers.admin.address);
-      currectVotes1 = await this.hifi.getCurrentVotes(this.signers.bob.address);
-      expect(currectVotes1).to.be.eq(parseEther("1"));
     });
   });
 
