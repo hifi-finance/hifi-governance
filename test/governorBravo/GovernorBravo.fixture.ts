@@ -34,7 +34,9 @@ export async function deployGovernorBravoFixture(): Promise<{
   );
 
   const godModeHifiArtifact = await artifacts.readArtifact("GodModeHifi");
-  const godModeHifi: GodModeHifi = <GodModeHifi>await waffle.deployContract(admin, godModeHifiArtifact, []);
+  const godModeHifi: GodModeHifi = <GodModeHifi>(
+    await waffle.deployContract(admin, godModeHifiArtifact, [admin.address, admin.address])
+  );
 
   const governorBravoImplementationFactory: GovernorBravoImplementation_factory = <GovernorBravoImplementation_factory>(
     await ethers.getContractFactory("GovernorBravoDelegate")

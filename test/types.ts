@@ -1,13 +1,13 @@
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 
 import { GovernorBravoDelegate } from "../src/types";
-import type { Hifi } from "../src/types/Hifi";
+import type { GodModeHifi } from "../src/types/test/GodModeHifi";
 
 type Fixture<T> = () => Promise<T>;
 
 declare module "mocha" {
   export interface Context {
-    hifi: Hifi;
+    hifi: GodModeHifi;
     governorBravo: GovernorBravoDelegate;
     loadFixture: <T>(fixture: Fixture<T>) => Promise<T>;
     signers: Signers;

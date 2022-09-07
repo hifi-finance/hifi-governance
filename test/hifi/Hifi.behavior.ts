@@ -1,11 +1,12 @@
 import { BigNumber } from "@ethersproject/bignumber";
 import { expect } from "chai";
-import { network } from "hardhat";
+import { constants, utils } from "ethers";
+import { parseEther } from "ethers/lib/utils";
+import { ethers, network } from "hardhat";
 
 export function shouldBehaveLikeHifi(): void {
   const name = "Hifi Finance";
   const symbol = "HIFI";
-  const chainId = 1;
 
   describe("metadata", function () {
     it("has given name", async function () {
@@ -180,6 +181,89 @@ export function shouldBehaveLikeHifi(): void {
       expect({ ...(await this.hifi.checkpoints(this.signers.alice.address, 1)) }).to.deep.include({
         fromBlock: t2.blockNumber,
         votes: BigNumber.from(100),
+      });
+    });
+  });
+
+  describe("permit", async function () {
+    it("succeeds", async function () {
+      const { chainId } = await ethers.provider.getNetwork();
+      const domain = {
+        name: "Hifi Finance",
+        chainId: chainId,
+        verifyingContract: this.hifi.address,
+      };
+      const types = {
+        Permit: [
+          { name: "owner", type: "address" },
+          { name: "spender", type: "address" },
+          { name: "value", type: "uint256" },
+          { name: "nonce", type: "uint256" },
+          { name: "deadline", type: "uint256" },
+        ],
+      };
+
+      const owner = this.signers.admin.address;
+      const spender = this.signers.alice.address;
+      const amount = 123;
+      const nonce = await this.hifi.nonces(this.signers.admin.address);
+      const deadline = constants.MaxUint256;
+
+      const value = {
+        owner,
+        spender,
+        value: amount,
+        nonce,
+        deadline,
+      };
+
+      const signature = await this.signers.admin._signTypedData(domain, types, value);
+      const { v, r, s } = ethers.utils.splitSignature(signature);
+      await this.hifi.permit(owner, spender, amount, deadline, v, utils.hexlify(r), utils.hexlify(s));
+      expect(await this.hifi.allowance(owner, spender)).to.eq(amount);
+      expect(await this.hifi.nonces(owner)).to.eq(1);
+
+      await this.hifi.connect(this.signers.alice).transferFrom(owner, spender, amount);
+    });
+
+    it("nested delegation", async function () {
+      await this.hifi.transfer(this.signers.alice.address, parseEther("1"));
+      await this.hifi.transfer(this.signers.bob.address, parseEther("2"));
+
+      let currectVotes0 = await this.hifi.getCurrentVotes(this.signers.alice.address);
+      let currectVotes1 = await this.hifi.getCurrentVotes(this.signers.bob.address);
+      expect(currectVotes0).to.be.eq(0);
+      expect(currectVotes1).to.be.eq(0);
+
+      await this.hifi.connect(this.signers.alice).delegate(this.signers.bob.address);
+      currectVotes1 = await this.hifi.getCurrentVotes(this.signers.bob.address);
+      expect(currectVotes1).to.be.eq(parseEther("1"));
+
+      await this.hifi.connect(this.signers.bob).delegate(this.signers.bob.address);
+      currectVotes1 = await this.hifi.getCurrentVotes(this.signers.bob.address);
+      expect(currectVotes1).to.be.eq(parseEther("1").add(parseEther("2")));
+
+      await this.hifi.connect(this.signers.bob).delegate(this.signers.admin.address);
+      currectVotes1 = await this.hifi.getCurrentVotes(this.signers.bob.address);
+      expect(currectVotes1).to.be.eq(parseEther("1"));
+    });
+  });
+
+  describe("getCurrentVotes", function () {
+    describe("nCheckpoints > 0", function () {
+      beforeEach(async function () {
+        await this.hifi.__godMode_setCheckpoint(this.signers.alice.address, 0, 0, 1);
+        await this.hifi.__godMode_setNumCheckpoints(this.signers.alice.address, 1);
+      });
+
+      it("succeeds", async function () {
+        expect(await this.hifi.getCurrentVotes(this.signers.alice.address)).to.be.equal(1);
+      });
+    });
+
+    describe("nCheckpoints == 0", function () {
+      it("succeeds", async function () {
+        expect(await this.hifi.getCurrentVotes(this.signers.alice.address)).to.be.equal(0);
       });
     });
   });
