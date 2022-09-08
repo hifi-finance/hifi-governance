@@ -612,11 +612,12 @@ export function shouldBehaveLikeGovernorBravo(): void {
 
       describe("msg.sender == address(0)", function () {
         it("reverts", async function () {
+          const signer = await ethers.getSigner(constants.AddressZero);
           await network.provider.request({
             method: "hardhat_impersonateAccount",
             params: [constants.AddressZero],
           });
-          await expect(this.governorBravo.connect(this.signers.admin)._acceptAdmin()).to.be.revertedWith(
+          await expect(this.governorBravo.connect(signer)._acceptAdmin()).to.be.revertedWith(
             "GovernorBravo:_acceptAdmin: pending admin only",
           );
           await network.provider.request({
