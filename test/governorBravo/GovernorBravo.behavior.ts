@@ -1,7 +1,6 @@
 import { defaultAbiCoder } from "@ethersproject/abi";
-import { BigNumber } from "@ethersproject/bignumber";
 import { expect } from "chai";
-import { getDefaultProvider } from "ethers";
+import { constants } from "ethers";
 import { parseEther } from "ethers/lib/utils";
 import { ethers, network } from "hardhat";
 
@@ -484,6 +483,148 @@ export function shouldBehaveLikeGovernorBravo(): void {
       await network.provider.send("evm_mine");
 
       expect(await this.governorBravo.state(this.newProposalId)).to.be.equal(7);
+    });
+  });
+
+  describe("_setVotingDelay", function () {
+    describe("msg.sender != admin", function () {
+      it("reverts", async function () {
+        await expect(this.governorBravo.connect(this.signers.alice)._setVotingDelay(0)).to.be.revertedWith(
+          "GovernorBravo::_setVotingDelay: admin only",
+        );
+      });
+    });
+
+    describe("msg.sender == admin", function () {
+      describe("newVotingDelay >= MIN_VOTING_DELAY && newVotingDelay <= MAX_VOTING_DELAY", function () {
+        it("succeeds", async function () {
+          const votingDelayBefore = await this.governorBravo.votingDelay();
+          const newVotingDelay = await this.governorBravo.MIN_VOTING_DELAY();
+          const call = await this.governorBravo._setVotingDelay(newVotingDelay);
+          await expect(call).to.emit(this.governorBravo, "VotingDelaySet").withArgs(votingDelayBefore, newVotingDelay);
+        });
+      });
+
+      describe("Otherwise", function () {
+        it("reverts", async function () {
+          await expect(this.governorBravo._setVotingDelay(0)).to.be.revertedWith(
+            "GovernorBravo::_setVotingDelay: invalid voting delay",
+          );
+        });
+      });
+    });
+  });
+
+  describe("_setVotingPeriod", function () {
+    describe("msg.sender != admin", function () {
+      it("reverts", async function () {
+        await expect(this.governorBravo.connect(this.signers.alice)._setVotingPeriod(0)).to.be.revertedWith(
+          "GovernorBravo::_setVotingPeriod: admin only",
+        );
+      });
+    });
+
+    describe("msg.sender == admin", function () {
+      it("succeeds", async function () {
+        const votingPeriodBefore = await this.governorBravo.votingPeriod();
+        const newVotingPeriod = await this.governorBravo.MIN_VOTING_PERIOD();
+        const call = await this.governorBravo._setVotingPeriod(newVotingPeriod);
+        await expect(call).to.emit(this.governorBravo, "VotingPeriodSet").withArgs(votingPeriodBefore, newVotingPeriod);
+      });
+    });
+  });
+
+  describe("_setProposalThreshold", function () {
+    describe("msg.sender != admin", function () {
+      it("reverts", async function () {
+        await expect(this.governorBravo.connect(this.signers.alice)._setProposalThreshold(0)).to.be.revertedWith(
+          "GovernorBravo::_setProposalThreshold: admin only",
+        );
+      });
+    });
+
+    describe("msg.sender == admin", function () {
+      describe("newProposalThreshold >= MIN_PROPOSAL_THRESHOLD && newProposalThreshold <= MAX_PROPOSAL_THRESHOLD", function () {
+        it("succeeds", async function () {
+          const proposalThresholdBefore = await this.governorBravo.proposalThreshold();
+          const newProposalThreshold = await this.governorBravo.MIN_PROPOSAL_THRESHOLD();
+          const call = await this.governorBravo._setProposalThreshold(newProposalThreshold);
+          await expect(call)
+            .to.emit(this.governorBravo, "ProposalThresholdSet")
+            .withArgs(proposalThresholdBefore, newProposalThreshold);
+        });
+      });
+
+      describe("Otherwise", function () {
+        it("reverts", async function () {
+          await expect(this.governorBravo._setProposalThreshold(0)).to.be.revertedWith(
+            "GovernorBravo::_setProposalThreshold: invalid proposal threshold",
+          );
+        });
+      });
+    });
+  });
+
+  describe("_setPendingAdmin", function () {
+    describe("msg.sender != admin", function () {
+      it("reverts", async function () {
+        await expect(
+          this.governorBravo.connect(this.signers.alice)._setPendingAdmin(constants.AddressZero),
+        ).to.be.revertedWith("GovernorBravo:_setPendingAdmin: admin only");
+      });
+    });
+
+    describe("msg.sender == admin", function () {
+      it("succeeds", async function () {
+        const pendingAdminBefore = await this.governorBravo.pendingAdmin();
+        const newPendingAdmin = this.signers.alice.address;
+        const call = await this.governorBravo._setPendingAdmin(newPendingAdmin);
+        await expect(call).to.emit(this.governorBravo, "NewPendingAdmin").withArgs(pendingAdminBefore, newPendingAdmin);
+      });
+    });
+  });
+
+  describe("_acceptAdmin", function () {
+    describe("msg.sender != pendingAdmin", function () {
+      it("reverts", async function () {
+        await expect(this.governorBravo.connect(this.signers.alice)._acceptAdmin()).to.be.revertedWith(
+          "GovernorBravo:_acceptAdmin: pending admin only",
+        );
+      });
+    });
+
+    describe("msg.sender == pendingAdmin", function () {
+      beforeEach(async function () {
+        await this.governorBravo.__godMode_setPendingAdmin(this.signers.alice.address);
+      });
+
+      describe("msg.sender != address(0)", function () {
+        it("succeeds", async function () {
+          const adminBefore = await this.governorBravo.admin();
+          const pendingAdminBefore = await this.governorBravo.pendingAdmin();
+          const call = await this.governorBravo.connect(this.signers.alice)._acceptAdmin();
+          await expect(call).to.emit(this.governorBravo, "NewAdmin").withArgs(adminBefore, this.signers.alice.address);
+          await expect(call)
+            .to.emit(this.governorBravo, "NewPendingAdmin")
+            .withArgs(pendingAdminBefore, constants.AddressZero);
+        });
+      });
+
+      describe("msg.sender == address(0)", function () {
+        it("reverts", async function () {
+          await network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [constants.AddressZero],
+          });
+          await expect(this.governorBravo.connect(this.signers.admin)._acceptAdmin()).to.be.revertedWith(
+            "GovernorBravo:_acceptAdmin: pending admin only",
+          );
+          await network.provider.request({
+            method: "hardhat_stopImpersonatingAccount",
+            params: [constants.AddressZero],
+          });
+        });
+      });
     });
   });
 }

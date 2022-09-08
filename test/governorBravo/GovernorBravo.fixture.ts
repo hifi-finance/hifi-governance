@@ -1,14 +1,12 @@
-import { AddressZero } from "@ethersproject/constants";
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { Contract, getDefaultProvider } from "ethers";
+import { Contract } from "ethers";
 import { ethers } from "hardhat";
 import { artifacts, waffle } from "hardhat";
-import { Artifact } from "hardhat/types";
 
-import type { GovernorBravoDelegate as GovernorBravoImplementation } from "../../src/types/GovernorBravoDelegate";
 import type { GovernorBravoDelegator as GovernorBravoProxy } from "../../src/types/GovernorBravoDelegator";
-import { GovernorBravoDelegate__factory as GovernorBravoImplementation_factory } from "../../src/types/factories/GovernorBravoDelegate__factory";
 import type { GovernorBravoDelegator__factory as GovernorBravoProxy__factory } from "../../src/types/factories/GovernorBravoDelegator__factory";
+import { GodModeGovernorBravoDelegate__factory as GovernorBravoImplementation_factory } from "../../src/types/factories/test/GodModeGovernorBravoDelegate__factory";
+import type { GodModeGovernorBravoDelegate as GovernorBravoImplementation } from "../../src/types/test/GodModeGovernorBravoDelegate";
 import type { GodModeHifi } from "../../src/types/test/GodModeHifi";
 import type { GodModeTimelock } from "../../src/types/test/GodModeTimelock";
 
@@ -39,7 +37,7 @@ export async function deployGovernorBravoFixture(): Promise<{
   );
 
   const governorBravoImplementationFactory: GovernorBravoImplementation_factory = <GovernorBravoImplementation_factory>(
-    await ethers.getContractFactory("GovernorBravoDelegate")
+    await ethers.getContractFactory("GodModeGovernorBravoDelegate")
   );
   const governorBravoImplementation: GovernorBravoImplementation = <GovernorBravoImplementation>(
     await governorBravoImplementationFactory.connect(admin).deploy()
