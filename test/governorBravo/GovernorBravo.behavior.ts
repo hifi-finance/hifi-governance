@@ -257,23 +257,23 @@ export function shouldBehaveLikeGovernorBravo(): void {
           .connect(this.signers.david)
           .callStatic.propose(this.targets, this.values, this.signatures, this.callDatas, "yoot");
 
-        await expect(
-          await this.governorBravo
-            .connect(this.signers.david)
-            .callStatic.propose(this.targets, this.values, this.signatures, this.callDatas, "second proposal"),
-        )
+        const call = await this.governorBravo
+          .connect(this.signers.david)
+          .propose(this.targets, this.values, this.signatures, this.callDatas, "second proposal");
+
+        await expect(call)
           .to.emit(this.governorBravo, "ProposalCreated")
-          .withArgs({
-            id: nextProposalId,
-            targets: this.targets,
-            values: this.values,
-            signatures: this.signatures,
-            calldatas: this.callDatas,
-            startBlock: 15,
-            endBlock: 17295,
-            description: "second proposal",
-            proposer: this.signers.david.address,
-          });
+          .withArgs(
+            nextProposalId,
+            this.signers.david.address,
+            this.targets,
+            this.values,
+            this.signatures,
+            this.callDatas,
+            12,
+            5772,
+            "second proposal",
+          );
       });
     });
   });
