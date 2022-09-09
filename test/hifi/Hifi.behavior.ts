@@ -30,7 +30,7 @@ export function shouldBehaveLikeHifi(): void {
     });
 
     it("burn 0", async function () {
-      let balanceBefore = await this.hifi.balanceOf(this.signers.admin.address);
+      const balanceBefore = await this.hifi.balanceOf(this.signers.admin.address);
       await this.hifi.connect(this.signers.admin).burn(0);
       expect(await this.hifi.balanceOf(this.signers.admin.address)).to.be.eq(balanceBefore);
       expect(await this.hifi.totalSupply()).to.be.eq(this.supply);
@@ -64,7 +64,7 @@ export function shouldBehaveLikeHifi(): void {
     });
 
     it("burn 0", async function () {
-      let balanceBefore = await this.hifi.balanceOf(this.signers.admin.address);
+      const balanceBefore = await this.hifi.balanceOf(this.signers.admin.address);
       await this.hifi.connect(this.signers.alice).burnFrom(this.signers.admin.address, 0);
       expect(await this.hifi.balanceOf(this.signers.admin.address)).to.be.eq(balanceBefore);
       expect(await this.hifi.totalSupply()).to.be.eq(this.supply);
@@ -240,7 +240,7 @@ export function shouldBehaveLikeHifi(): void {
       await this.hifi.transfer(this.signers.alice.address, parseEther("1"));
       await this.hifi.transfer(this.signers.bob.address, parseEther("2"));
 
-      let currectVotes0 = await this.hifi.getCurrentVotes(this.signers.alice.address);
+      const currectVotes0 = await this.hifi.getCurrentVotes(this.signers.alice.address);
       let currectVotes1 = await this.hifi.getCurrentVotes(this.signers.bob.address);
       expect(currectVotes0).to.be.eq(0);
       expect(currectVotes1).to.be.eq(0);

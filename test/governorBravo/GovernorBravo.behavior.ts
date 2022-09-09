@@ -95,18 +95,6 @@ export function shouldBehaveLikeGovernorBravo(): void {
         });
 
         describe("castVoteBySig", function () {
-          const Domain = (gov: any) => ({
-            name: "Compound Governor Bravo",
-            chainId: 1, // await web3.eth.net.getId(); See: https://github.com/trufflesuite/ganache-core/issues/515
-            verifyingContract: gov._address,
-          });
-          const Types = {
-            Ballot: [
-              { name: "proposalId", type: "uint256" },
-              { name: "support", type: "uint8" },
-            ],
-          };
-
           it("reverts if the signatory is invalid", async function () {
             await expect(
               this.governorBravo.castVoteBySig(
@@ -169,7 +157,7 @@ export function shouldBehaveLikeGovernorBravo(): void {
       });
 
       it("Targets, Values, Signatures, Calldatas are set according to parameters", async function () {
-        let dynamicFields = await this.governorBravo.getActions(this.trivialProposal.id);
+        const dynamicFields = await this.governorBravo.getActions(this.trivialProposal.id);
         expect(dynamicFields.targets).to.be.deep.equal(this.targets);
         expect(dynamicFields[1]).to.be.deep.equal(this.values);
         expect(dynamicFields.signatures).to.be.deep.equal(this.signatures);
@@ -252,7 +240,7 @@ export function shouldBehaveLikeGovernorBravo(): void {
         await this.hifi.connect(this.signers.david).delegate(this.signers.david.address);
 
         await network.provider.send("evm_mine");
-        let nextProposalId = await this.governorBravo
+        const nextProposalId = await this.governorBravo
           .connect(this.signers.david)
           .callStatic.propose(this.targets, this.values, this.signatures, this.callDatas, "yoot");
 
@@ -265,12 +253,12 @@ export function shouldBehaveLikeGovernorBravo(): void {
 
         await network.provider.send("evm_mine");
 
-        let nextProposalId = await this.governorBravo
+        const nextProposalId = await this.governorBravo
           .connect(this.signers.david)
           .callStatic.propose(this.targets, this.values, this.signatures, this.callDatas, "yoot");
 
-        expect(
-          this.governorBravo
+        await expect(
+          await this.governorBravo
             .connect(this.signers.david)
             .callStatic.propose(this.targets, this.values, this.signatures, this.callDatas, "second proposal"),
         )
@@ -360,7 +348,7 @@ export function shouldBehaveLikeGovernorBravo(): void {
       await this.governorBravo
         .connect(this.signers.alice)
         .propose(this.targets, this.values, this.signatures, this.callDatas, "do nothing");
-      let newProposalId = await this.governorBravo.proposalCount();
+      const newProposalId = await this.governorBravo.proposalCount();
 
       // send away the delegates
       await this.hifi.connect(this.signers.alice).delegate(this.signers.admin.address);
@@ -431,9 +419,9 @@ export function shouldBehaveLikeGovernorBravo(): void {
 
       await this.governorBravo.queue(this.newProposalId);
 
-      let gracePeriod = 14 * 24 * 60 * 60;
-      let p = await this.governorBravo.proposals(this.newProposalId);
-      let eta = p.eta;
+      const gracePeriod = 14 * 24 * 60 * 60;
+      const p = await this.governorBravo.proposals(this.newProposalId);
+      const eta = p.eta;
 
       await network.provider.send("evm_setNextBlockTimestamp", [eta.add(gracePeriod).sub(1).toHexString()]);
       await network.provider.send("evm_mine");
@@ -465,9 +453,9 @@ export function shouldBehaveLikeGovernorBravo(): void {
       await network.provider.send("evm_mine");
       await this.governorBravo.connect(this.signers.alice).queue(this.newProposalId);
 
-      let gracePeriod = 14 * 24 * 60 * 60;
-      let p = await this.governorBravo.proposals(this.newProposalId);
-      let eta = p.eta;
+      const gracePeriod = 14 * 24 * 60 * 60;
+      const p = await this.governorBravo.proposals(this.newProposalId);
+      const eta = p.eta;
 
       await network.provider.send("evm_setNextBlockTimestamp", [eta.add(gracePeriod).sub(3).toHexString()]);
       await network.provider.send("evm_mine");
