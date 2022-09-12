@@ -27,14 +27,20 @@ yarn-error.log*
 # types
 src/types/*
 !src/types/common.ts
-!src/types/Hifi.ts
 !src/types/GovernorBravoDelegate.ts
 !src/types/GovernorBravoDelegator.ts
+!src/types/Hifi.ts
 !src/types/Timelock.ts
+!src/types/test/GodModeGovernorBravoDelegate.ts
+!src/types/test/GodModeHifi.ts
+!src/types/test/GodModeTimelock.ts
 
 # factories
 src/types/factories/*
-!src/types/factories/Hifi__factory.ts
 !src/types/factories/GovernorBravoDelegate__factory.ts
 !src/types/factories/GovernorBravoDelegator__factory.ts
+!src/types/factories/Hifi__factory.ts
 !src/types/factories/Timelock__factory.ts
+!src/types/factories/test/GodModeGovernorBravoDelegate__factory.ts
+!src/types/factories/test/GodModeHifi__factory.ts
+!src/types/factories/test/GodModeTimelock__factory.ts
