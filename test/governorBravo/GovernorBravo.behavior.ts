@@ -270,8 +270,8 @@ export function shouldBehaveLikeGovernorBravo(): void {
             this.values,
             this.signatures,
             this.callDatas,
-            12,
-            5772,
+            15522512,
+            15528272,
             "second proposal",
           );
       });

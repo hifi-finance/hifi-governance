@@ -17,7 +17,7 @@ contract Hifi {
     IERC20 public constant mft = IERC20(0xDF2C7238198Ad8B389666574f2d8bc411A4b7428);
 
     /// @notice Hifi to MFT token swap ratio
-    uint8 public constant swapRatio = 10;
+    uint8 public constant swapRatio = 100;
 
     /// @notice Total number of tokens in circulation
     uint256 public totalSupply = 1_000_000_000e18; // 1 billion Hifi
@@ -393,7 +393,7 @@ contract Hifi {
 
     function swap(uint256 mftAmount) external {
         require(mftAmount != 0, "Hifi::swap: swap amount can't be zero");
-        require(mft.transferFrom(msg.sender, address(0), mftAmount), "Hifi::swap: MFT transfer from sender failed");
+        mft.transferFrom(msg.sender, address(1), mftAmount);
 
         uint256 rawHifiAmount = mftAmount / swapRatio;
 
