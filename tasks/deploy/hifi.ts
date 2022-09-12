@@ -2,8 +2,8 @@ import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { task, types } from "hardhat/config";
 import type { TaskArguments } from "hardhat/types";
 
-import type { Hifi } from "../../src/types/Hifi";
-import { Hifi__factory } from "../../src/types/factories/Hifi__factory";
+import type { Hifi } from "../../src/types/contracts/Hifi";
+import { Hifi__factory } from "../../src/types/factories/contracts/Hifi__factory";
 import { SUBTASK_DEPLOY_WAIT_FOR_CONFIRMATIONS, SUBTASK_VERIFY, TASK_DEPLOY_CONTRACT_HIFI } from "../constants";
 
 task(TASK_DEPLOY_CONTRACT_HIFI)

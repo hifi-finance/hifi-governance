@@ -2,8 +2,8 @@ import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { task, types } from "hardhat/config";
 import type { TaskArguments } from "hardhat/types";
 
-import { Timelock } from "../../src/types/Timelock";
-import { Timelock__factory } from "../../src/types/factories/Timelock__factory";
+import { Timelock } from "../../src/types/contracts/Timelock";
+import { Timelock__factory } from "../../src/types/factories/contracts/Timelock__factory";
 import { SUBTASK_DEPLOY_WAIT_FOR_CONFIRMATIONS, SUBTASK_VERIFY, TASK_DEPLOY_CONTRACT_TIMELOCK } from "../constants";
 
 task(TASK_DEPLOY_CONTRACT_TIMELOCK)
