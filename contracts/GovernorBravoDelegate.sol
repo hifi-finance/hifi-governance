@@ -124,8 +124,9 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         uint256 endBlock = add256(startBlock, votingPeriod);
 
         proposalCount++;
-        Proposal storage newProposal = proposals[proposalCount];
-        newProposal.id = proposalCount;
+        uint256 newProposalID = proposalCount;
+        Proposal storage newProposal = proposals[newProposalID];
+        newProposal.id = newProposalID;
         newProposal.proposer = msg.sender;
         newProposal.eta = 0;
         newProposal.targets = targets;
