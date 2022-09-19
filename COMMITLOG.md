@@ -83,6 +83,16 @@
 
 #### Commit:
 
+[3c6c3a51c4a4c7d3707389a3eec2f639d4489ce6](https://github.com/hifi-finance/hifi-governance/commit/3c6c3a51c4a4c7d3707389a3eec2f639d4489ce6)
+
+#### Changes:
+
+- Completely removed `SafeMath.sol` file and replace SafeMath operations inside `Timelock.sol` with standard Solidity math operations.
+
+---
+
+#### Commit:
+
 [2f2bdf95b3bdeeeadb8bac01837847de689a6c43](https://github.com/hifi-finance/hifi-governance/commit/2f2bdf95b3bdeeeadb8bac01837847de689a6c43)
 
 #### Changes:
