@@ -50,3 +50,51 @@
 - Use `type(uint256).max` instead of deprecated `uint256(-1)`.
 - Use `type(uint96).max` instead of deprecated `uint96(-1)`.
 - Use `block.timestamp` instead of deprecated `now`.
+
+---
+
+#### Commit:
+
+[ddded2ac84fdcee3e90a3dbcb3ca9a395b365cdd](https://github.com/hifi-finance/hifi-governance/commit/ddded2ac84fdcee3e90a3dbcb3ca9a395b365cdd)
+
+#### Changes:
+
+- Added Ampleforth token burn functionality to Hifi token. Forked code from [ampleforth/Forth/contracts/Forth.sol L134](https://github.com/ampleforth/Forth/blob/e8498423870a6698e8f06a2a74a04f298f1aab82/contracts/Forth.sol#L134) to [ampleforth/Forth/contracts/Forth.sol L176](https://github.com/ampleforth/Forth/blob/e8498423870a6698e8f06a2a74a04f298f1aab82/contracts/Forth.sol#L176).
+
+---
+
+#### Commit:
+
+[29b9886ee7ba140f21029d8d2355bbca016e7445](https://github.com/hifi-finance/hifi-governance/commit/29b9886ee7ba140f21029d8d2355bbca016e7445)
+
+#### Changes:
+
+- Removed Uniswap emission schedule from Hifi token. Includes the following changes:
+
+  - Removed `mintingAllowedAfter` storage var.
+  - Removed `minimumTimeBetweenMints` constant.
+  - Removed `mintCap` constant.
+  - Remove any require statements that depend on any removed variables.
+  - Refactor `mint(...)` function implementation.
+
+  Note: this commit includes a bug at [hifi-finance/hifi-governance/contracts/Hifi.sol L119](https://github.com/hifi-finance/hifi-governance/blob/29b9886ee7ba140f21029d8d2355bbca016e7445/contracts/Hifi.sol#L119) that was fixed later on in [2f2bdf95b3bdeeeadb8bac01837847de689a6c43](https://github.com/hifi-finance/hifi-governance/commit/2f2bdf95b3bdeeeadb8bac01837847de689a6c43).
+
+---
+
+#### Commit:
+
+[2f2bdf95b3bdeeeadb8bac01837847de689a6c43](https://github.com/hifi-finance/hifi-governance/commit/2f2bdf95b3bdeeeadb8bac01837847de689a6c43)
+
+#### Changes:
+
+- Fixes a bug that was introduced at [hifi-finance/hifi-governance/contracts/Hifi.sol L119](https://github.com/hifi-finance/hifi-governance/blob/29b9886ee7ba140f21029d8d2355bbca016e7445/contracts/Hifi.sol#L119).
+
+---
+
+#### Commit:
+
+[12ff0b4014b80f538dc640df6a084ea92c0d5acd](https://github.com/hifi-finance/hifi-governance/commit/12ff0b4014b80f538dc640df6a084ea92c0d5acd)
+
+#### Changes:
+
+- Added a gas optimization at [hifi-finance/hifi-governance/contracts/GovernorBravoDelegate.sol L127](https://github.com/hifi-finance/hifi-governance/blob/12ff0b4014b80f538dc640df6a084ea92c0d5acd/contracts/GovernorBravoDelegate.sol#L127) by avoiding multiple SLOAD operations.
