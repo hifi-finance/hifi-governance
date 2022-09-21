@@ -103,6 +103,36 @@
 
 #### Commit:
 
+[e1dc7ddb22cf0b2944fbf5a8ce462dc1f7a1e91f](https://github.com/hifi-finance/hifi-governance/commit/e1dc7ddb22cf0b2944fbf5a8ce462dc1f7a1e91f)
+
+#### Changes:
+
+- Add the MFT to HIFI token swap functionality. The code for the `swap(...)` function was not forked.
+
+---
+
+#### Commit:
+
+[8910f813f1101170b2ab43dc9041afacc193f9c8](https://github.com/hifi-finance/hifi-governance/commit/8910f813f1101170b2ab43dc9041afacc193f9c8)
+
+#### Changes:
+
+- Refactored the MFT to HIFI token swap functionality.
+
+---
+
+#### Commit:
+
+[c235e08f23e2c735966768752e1b84ffcc3fc249](https://github.com/hifi-finance/hifi-governance/commit/c235e08f23e2c735966768752e1b84ffcc3fc249)
+
+#### Changes:
+
+- Fixed bug in `swap(...)` at [hifi-finance/hifi-governance/contracts/Hifi.sol L396](https://github.com/hifi-finance/hifi-governance/blob/8910f813f1101170b2ab43dc9041afacc193f9c8/contracts/Hifi.sol#L396) caused by trying to send burned MFT tokens to `address(0)`, which is not allowed in the MFT token contract implementation.
+
+---
+
+#### Commit:
+
 [12ff0b4014b80f538dc640df6a084ea92c0d5acd](https://github.com/hifi-finance/hifi-governance/commit/12ff0b4014b80f538dc640df6a084ea92c0d5acd)
 
 #### Changes:
