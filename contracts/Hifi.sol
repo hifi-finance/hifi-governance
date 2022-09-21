@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.15;
 
+import "@prb/contracts/token/erc20/IERC20.sol";
+
 contract Hifi {
     /// @notice EIP-20 token name for this token
     string public constant name = "Hifi Finance";
@@ -10,6 +12,12 @@ contract Hifi {
 
     /// @notice EIP-20 token decimals for this token
     uint8 public constant decimals = 18;
+
+    /// @notice The MFT token contract
+    IERC20 public constant mft = IERC20(0xDF2C7238198Ad8B389666574f2d8bc411A4b7428);
+
+    /// @notice Hifi to MFT token swap ratio
+    uint8 public constant swapRatio = 100;
 
     /// @notice Total number of tokens in circulation
     uint256 public totalSupply = 1_000_000_000e18; // 1 billion Hifi
@@ -61,6 +69,9 @@ contract Hifi {
 
     /// @notice An event thats emitted when a delegate account's vote balance changes
     event DelegateVotesChanged(address indexed delegate, uint256 previousBalance, uint256 newBalance);
+
+    /// @notice An event thats emitted when an MFT token is swapped for HIFI
+    event Swap(address indexed sender, uint256 mftAmount, uint256 hifiAmount);
 
     /// @notice The standard EIP-20 transfer event
     event Transfer(address indexed from, address indexed to, uint256 amount);
@@ -378,6 +389,18 @@ contract Hifi {
             }
         }
         return checkpoints[account][lower].votes;
+    }
+
+    function swap(uint256 mftAmount) external {
+        require(mftAmount != 0, "Hifi::swap: swap amount can't be zero");
+        mft.transferFrom(msg.sender, address(1), mftAmount);
+
+        uint256 rawHifiAmount = mftAmount / swapRatio;
+
+        uint96 hifiAmount = safe96(rawHifiAmount, "Hifi::swap: swap exceeds 96 bits");
+        _mint(msg.sender, hifiAmount);
+
+        emit Swap(msg.sender, mftAmount, hifiAmount);
     }
 
     function _delegate(address delegator, address delegatee) internal {

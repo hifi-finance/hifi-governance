@@ -340,6 +340,63 @@ export function shouldBehaveLikeHifi(): void {
     });
   });
 
+  describe("swap", async function () {
+    describe("mftAmount == 0", function () {
+      it("reverts", async function () {
+        await expect(this.hifi.swap(0)).to.be.revertedWith("Hifi::swap: swap amount can't be zero");
+      });
+    });
+
+    describe("mftAmount != 0", function () {
+      describe("mftAmount > user balance", function () {
+        it("reverts", async function () {
+          await expect(this.hifi.swap(1)).to.be.reverted;
+        });
+      });
+
+      describe("mftAmount <= user balance", function () {
+        beforeEach(async function () {
+          const whale = "0xa984Faa7a5Ff8Ee8182572d84Db12bc4B88983f7";
+          const signer = await ethers.getSigner(whale);
+          await this.signers.admin.sendTransaction({
+            to: signer.address,
+            value: ethers.utils.parseEther("1.0"),
+          });
+          await network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [whale],
+          });
+          this.balance = "1000000000000000000";
+          await this.mft.connect(signer).transfer(this.signers.alice.address, this.balance);
+          await network.provider.request({
+            method: "hardhat_stopImpersonatingAccount",
+            params: [whale],
+          });
+        });
+
+        describe("mftAmount > allowance", function () {
+          it("reverts", async function () {
+            await expect(this.hifi.swap(1)).to.be.reverted;
+          });
+        });
+
+        describe("mftAmount <= allowance", function () {
+          beforeEach(async function () {
+            await this.mft.connect(this.signers.alice).approve(this.hifi.address, constants.MaxUint256);
+          });
+
+          it("succeeds", async function () {
+            const call = await this.hifi.connect(this.signers.alice).swap(this.balance);
+            await expect(call)
+              .to.emit(this.hifi, "Swap")
+              .withArgs(this.signers.alice.address, this.balance, "10000000000000000");
+            expect(await this.hifi.balanceOf(this.signers.alice.address)).to.be.equal("10000000000000000");
+          });
+        });
+      });
+    });
+  });
+
   describe("getCurrentVotes", function () {
     describe("nCheckpoints > 0", function () {
       beforeEach(async function () {

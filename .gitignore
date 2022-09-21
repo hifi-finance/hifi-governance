@@ -27,20 +27,20 @@ yarn-error.log*
 # types
 src/types/*
 !src/types/common.ts
-!src/types/GovernorBravoDelegate.ts
-!src/types/GovernorBravoDelegator.ts
-!src/types/Hifi.ts
-!src/types/Timelock.ts
-!src/types/test/GodModeGovernorBravoDelegate.ts
-!src/types/test/GodModeHifi.ts
-!src/types/test/GodModeTimelock.ts
+!src/types/contracts/GovernorBravoDelegate.ts
+!src/types/contracts/GovernorBravoDelegator.ts
+!src/types/contracts/Hifi.ts
+!src/types/contracts/Timelock.ts
+!src/types/contracts/test/GodModeGovernorBravoDelegate.ts
+!src/types/contracts/test/GodModeHifi.ts
+!src/types/contracts/test/GodModeTimelock.ts
 
 # factories
 src/types/factories/*
-!src/types/factories/GovernorBravoDelegate__factory.ts
-!src/types/factories/GovernorBravoDelegator__factory.ts
-!src/types/factories/Hifi__factory.ts
-!src/types/factories/Timelock__factory.ts
-!src/types/factories/test/GodModeGovernorBravoDelegate__factory.ts
-!src/types/factories/test/GodModeHifi__factory.ts
-!src/types/factories/test/GodModeTimelock__factory.ts
+!src/types/factories/contracts/GovernorBravoDelegate__factory.ts
+!src/types/factories/contracts/GovernorBravoDelegator__factory.ts
+!src/types/factories/contracts/Hifi__factory.ts
+!src/types/factories/contracts/Timelock__factory.ts
+!src/types/factories/contracts/test/GodModeGovernorBravoDelegate__factory.ts
+!src/types/factories/contracts/test/GodModeHifi__factory.ts
+!src/types/factories/contracts/test/GodModeTimelock__factory.ts

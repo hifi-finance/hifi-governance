@@ -22,8 +22,9 @@ describe("Unit tests", function () {
 
   describe("Hifi", function () {
     beforeEach(async function () {
-      const { hifi } = await this.loadFixture(deployHifiFixture);
+      const { hifi, mft } = await this.loadFixture(deployHifiFixture);
       this.hifi = hifi;
+      this.mft = mft;
     });
 
     shouldBehaveLikeHifi();

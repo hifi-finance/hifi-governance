@@ -1,8 +1,8 @@
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { ethers } from "hardhat";
 
-import { GodModeTimelock__factory } from "../../src/types/factories/test/GodModeTimelock__factory";
-import type { GodModeTimelock } from "../../src/types/test/GodModeTimelock";
+import type { GodModeTimelock } from "../../src/types/contracts/test/GodModeTimelock";
+import { GodModeTimelock__factory } from "../../src/types/factories/contracts/test/GodModeTimelock__factory";
 
 export async function deployTimelockFixture(): Promise<{
   timelock: GodModeTimelock;

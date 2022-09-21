@@ -2,8 +2,8 @@ import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { task, types } from "hardhat/config";
 import type { TaskArguments } from "hardhat/types";
 
-import { GovernorBravoDelegator } from "../../src/types/GovernorBravoDelegator";
-import { GovernorBravoDelegator__factory } from "../../src/types/factories/GovernorBravoDelegator__factory";
+import { GovernorBravoDelegator } from "../../src/types/contracts/GovernorBravoDelegator";
+import { GovernorBravoDelegator__factory } from "../../src/types/factories/contracts/GovernorBravoDelegator__factory";
 import {
   SUBTASK_DEPLOY_WAIT_FOR_CONFIRMATIONS,
   SUBTASK_VERIFY,

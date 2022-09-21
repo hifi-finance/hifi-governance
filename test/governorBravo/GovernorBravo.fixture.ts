@@ -3,12 +3,12 @@ import { Contract } from "ethers";
 import { ethers } from "hardhat";
 import { artifacts, waffle } from "hardhat";
 
-import type { GovernorBravoDelegator as GovernorBravoProxy } from "../../src/types/GovernorBravoDelegator";
-import type { GovernorBravoDelegator__factory as GovernorBravoProxy__factory } from "../../src/types/factories/GovernorBravoDelegator__factory";
-import { GodModeGovernorBravoDelegate__factory as GovernorBravoImplementation_factory } from "../../src/types/factories/test/GodModeGovernorBravoDelegate__factory";
-import type { GodModeGovernorBravoDelegate as GovernorBravoImplementation } from "../../src/types/test/GodModeGovernorBravoDelegate";
-import type { GodModeHifi } from "../../src/types/test/GodModeHifi";
-import type { GodModeTimelock } from "../../src/types/test/GodModeTimelock";
+import type { GovernorBravoDelegator as GovernorBravoProxy } from "../../src/types/contracts/GovernorBravoDelegator";
+import type { GodModeGovernorBravoDelegate as GovernorBravoImplementation } from "../../src/types/contracts/test/GodModeGovernorBravoDelegate";
+import type { GodModeHifi } from "../../src/types/contracts/test/GodModeHifi";
+import type { GodModeTimelock } from "../../src/types/contracts/test/GodModeTimelock";
+import type { GovernorBravoDelegator__factory as GovernorBravoProxy__factory } from "../../src/types/factories/contracts/GovernorBravoDelegator__factory";
+import { GodModeGovernorBravoDelegate__factory as GovernorBravoImplementation_factory } from "../../src/types/factories/contracts/test/GodModeGovernorBravoDelegate__factory";
 
 function getContractAddress(address: string, nonce: number): string {
   const contract_address = "0x".concat(
