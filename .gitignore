@@ -14,7 +14,6 @@
 **/.coverage_contracts
 **/dist
 **/node_modules
-**/src/types
 
 # files
 *.env
@@ -24,3 +23,48 @@ coverage.json
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# types
+src/types/*
+!src/types/index.ts
+!src/types/common.ts
+!src/types/contracts
+src/types/contracts/*
+!src/types/contracts/index.ts
+!src/types/contracts/GovernorBravoDelegate.ts
+!src/types/contracts/GovernorBravoDelegator.ts
+!src/types/contracts/Hifi.ts
+!src/types/contracts/Timelock.ts
+!src/types/contracts/test
+src/types/contracts/test/*
+!src/types/contracts/test/GodModeGovernorBravoDelegate.ts
+!src/types/contracts/test/GodModeHifi.ts
+!src/types/contracts/test/GodModeTimelock.ts
+!src/types/@prb
+src/types/@prb/*
+!src/types/@prb/contracts
+!src/types/@prb/index.ts
+src/types/@prb/contracts/*
+!src/types/@prb/contracts/token
+!src/types/@prb/contracts/index.ts
+src/types/@prb/contracts/token/*
+!src/types/@prb/contracts/token/erc20
+!src/types/@prb/contracts/token/index.ts
+src/types/@prb/contracts/token/erc20/*
+!src/types/@prb/contracts/token/erc20/IERC20.ts
+!src/types/@prb/contracts/token/erc20/index.ts
+!src/types/factories
+src/types/factories/*
+!src/types/factories/index.ts
+!src/types/factories/contracts
+src/types/factories/contracts/*
+!src/types/factories/contracts/GovernorBravoDelegate__factory.ts
+!src/types/factories/contracts/GovernorBravoDelegator__factory.ts
+!src/types/factories/contracts/Hifi__factory.ts
+!src/types/factories/contracts/Timelock__factory.ts
+!src/types/factories/contracts/test
+src/types/factories/contracts/test/*
+!src/types/factories/contracts/test/index.ts
+!src/types/factories/contracts/test/GodModeGovernorBravoDelegate__factory.ts
+!src/types/factories/contracts/test/GodModeHifi__factory.ts
+!src/types/factories/contracts/test/GodModeTimelock__factory.ts

@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-
-pragma solidity 0.6.11;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.15;
 
 import "./GovernorBravoInterfaces.sol";
 
@@ -14,7 +12,7 @@ contract GovernorBravoDelegator is GovernorBravoDelegatorStorage, GovernorBravoE
         uint256 votingPeriod_,
         uint256 votingDelay_,
         uint256 proposalThreshold_
-    ) public {
+    ) {
         // Admin set to msg.sender for initialization
         admin = msg.sender;
 

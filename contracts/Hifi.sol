@@ -1,7 +1,7 @@
-pragma solidity ^0.5.16;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: BSD-3-Clause
+pragma solidity ^0.8.15;
 
-import "./SafeMath.sol";
+import "@prb/contracts/token/erc20/IERC20.sol";
 
 contract Hifi {
     /// @notice EIP-20 token name for this token
@@ -13,20 +13,17 @@ contract Hifi {
     /// @notice EIP-20 token decimals for this token
     uint8 public constant decimals = 18;
 
+    /// @notice The MFT token contract
+    IERC20 public constant mft = IERC20(0xDF2C7238198Ad8B389666574f2d8bc411A4b7428);
+
+    /// @notice Hifi to MFT token swap ratio
+    uint8 public constant swapRatio = 100;
+
     /// @notice Total number of tokens in circulation
     uint256 public totalSupply = 1_000_000_000e18; // 1 billion Hifi
 
     /// @notice Address which may mint new tokens
     address public minter;
-
-    /// @notice The timestamp after which minting may occur
-    uint256 public mintingAllowedAfter;
-
-    /// @notice Minimum time between mints
-    uint32 public constant minimumTimeBetweenMints = 1 days * 365;
-
-    /// @notice Cap on the percentage of totalSupply that can be minted at each mint
-    uint8 public constant mintCap = 2;
 
     /// @notice Allowance amounts on behalf of others
     mapping(address => mapping(address => uint96)) internal allowances;
@@ -73,6 +70,9 @@ contract Hifi {
     /// @notice An event thats emitted when a delegate account's vote balance changes
     event DelegateVotesChanged(address indexed delegate, uint256 previousBalance, uint256 newBalance);
 
+    /// @notice An event thats emitted when an MFT token is swapped for HIFI
+    event Swap(address indexed sender, uint256 mftAmount, uint256 hifiAmount);
+
     /// @notice The standard EIP-20 transfer event
     event Transfer(address indexed from, address indexed to, uint256 amount);
 
@@ -83,20 +83,12 @@ contract Hifi {
      * @notice Construct a new Hifi token
      * @param account The initial account to grant all the tokens
      * @param minter_ The account with minting ability
-     * @param mintingAllowedAfter_ The timestamp after which minting may occur
      */
-    constructor(
-        address account,
-        address minter_,
-        uint256 mintingAllowedAfter_
-    ) {
-        require(mintingAllowedAfter_ >= block.timestamp, "Hifi::constructor: minting can only begin after deployment");
-
+    constructor(address account, address minter_) {
         balances[account] = uint96(totalSupply);
         emit Transfer(address(0), account, totalSupply);
         minter = minter_;
         emit MinterChanged(address(0), minter);
-        mintingAllowedAfter = mintingAllowedAfter_;
     }
 
     /**
@@ -116,23 +108,26 @@ contract Hifi {
      */
     function mint(address dst, uint256 rawAmount) external {
         require(msg.sender == minter, "Hifi::mint: only the minter can mint");
-        require(block.timestamp >= mintingAllowedAfter, "Hifi::mint: minting not allowed yet");
-        require(dst != address(0), "Hifi::mint: cannot transfer to the zero address");
+        uint96 amount = safe96(rawAmount, "Hifi::mint: rawAmount exceeds 96 bits");
+        _mint(dst, amount);
+    }
 
-        // record the mint
-        mintingAllowedAfter = SafeMath.add(block.timestamp, minimumTimeBetweenMints);
+    /**
+     * @notice Mints `amount` tokens to `account`, increasing the total supply
+     * @param account The address of the account to mint to
+     * @param amount The number of tokens to mint
+     */
+    function _mint(address account, uint96 amount) internal {
+        require(account != address(0), "Hifi::_mint: mint to the zero address");
 
-        // mint the amount
-        uint96 amount = safe96(rawAmount, "Hifi::mint: amount exceeds 96 bits");
-        require(amount <= SafeMath.div(SafeMath.mul(totalSupply, mintCap), 100), "Hifi::mint: exceeded mint cap");
-        totalSupply = safe96(SafeMath.add(totalSupply, amount), "Hifi::mint: totalSupply exceeds 96 bits");
+        uint96 supply = safe96(totalSupply, "Hifi::_mint: old supply exceeds 96 bits");
+        totalSupply = add96(supply, amount, "Hifi::_mint: amount exceeds totalSupply");
 
-        // transfer the amount to the recipient
-        balances[dst] = add96(balances[dst], amount, "Hifi::mint: transfer amount overflows");
-        emit Transfer(address(0), dst, amount);
+        balances[account] = add96(balances[account], amount, "Hifi::_mint: transfer amount overflows");
+        emit Transfer(address(0), account, amount);
 
         // move delegates
-        _moveDelegates(address(0), delegates[dst], amount);
+        _moveDelegates(address(0), delegates[account], amount);
     }
 
     /**
@@ -155,8 +150,8 @@ contract Hifi {
      */
     function approve(address spender, uint256 rawAmount) external returns (bool) {
         uint96 amount;
-        if (rawAmount == uint256(-1)) {
-            amount = uint96(-1);
+        if (rawAmount == type(uint256).max) {
+            amount = type(uint96).max;
         } else {
             amount = safe96(rawAmount, "Hifi::approve: amount exceeds 96 bits");
         }
@@ -165,6 +160,52 @@ contract Hifi {
 
         emit Approval(msg.sender, spender, amount);
         return true;
+    }
+
+    /**
+     * @notice Destroys `amount` tokens from the caller
+     * @param rawAmount The number of tokens to burn
+     */
+    function burn(uint256 rawAmount) external {
+        uint96 amount = safe96(rawAmount, "Hifi::burn: rawAmount exceeds 96 bits");
+        _burn(msg.sender, amount);
+    }
+
+    /**
+     * @notice Destroys `amount` tokens from `account`, deducting from the caller's allowance
+     * @param account The address of the account to burn from
+     * @param rawAmount The number of tokens to burn
+     */
+    function burnFrom(address account, uint256 rawAmount) external {
+        uint96 amount = safe96(rawAmount, "Hifi::burnFrom: rawAmount exceeds 96 bits");
+
+        uint96 decreasedAllowance = sub96(
+            allowances[account][msg.sender],
+            amount,
+            "Hifi::burnFrom: amount exceeds allowance"
+        );
+        allowances[account][msg.sender] = decreasedAllowance;
+        emit Approval(account, msg.sender, decreasedAllowance);
+
+        _burn(account, amount);
+    }
+
+    /**
+     * @notice Destroys `amount` tokens from `account`, reducing the total supply
+     * @param account The address of the account to burn from
+     * @param amount The number of tokens to burn
+     */
+    function _burn(address account, uint96 amount) internal {
+        require(account != address(0), "Hifi::_burn: burn from the zero address");
+
+        uint96 supply = safe96(totalSupply, "Hifi::_burn: old supply exceeds 96 bits");
+        totalSupply = sub96(supply, amount, "Hifi::_burn: amount exceeds totalSupply");
+
+        balances[account] = sub96(balances[account], amount, "Hifi::_burn: transfer amount overflows");
+        emit Transfer(account, address(0), amount);
+
+        // move delegates
+        _moveDelegates(delegates[account], address(0), amount);
     }
 
     /**
@@ -187,8 +228,8 @@ contract Hifi {
         bytes32 s
     ) external {
         uint96 amount;
-        if (rawAmount == uint256(-1)) {
-            amount = uint96(-1);
+        if (rawAmount == type(uint256).max) {
+            amount = type(uint96).max;
         } else {
             amount = safe96(rawAmount, "Hifi::permit: amount exceeds 96 bits");
         }
@@ -203,7 +244,7 @@ contract Hifi {
         address signatory = ecrecover(digest, v, r, s);
         require(signatory != address(0), "Hifi::permit: invalid signature");
         require(signatory == owner, "Hifi::permit: unauthorized");
-        require(now <= deadline, "Hifi::permit: signature expired");
+        require(block.timestamp <= deadline, "Hifi::permit: signature expired");
 
         allowances[owner][spender] = amount;
 
@@ -247,7 +288,7 @@ contract Hifi {
         uint96 spenderAllowance = allowances[src][spender];
         uint96 amount = safe96(rawAmount, "Hifi::approve: amount exceeds 96 bits");
 
-        if (spender != src && spenderAllowance != uint96(-1)) {
+        if (spender != src && spenderAllowance != type(uint96).max) {
             uint96 newAllowance = sub96(
                 spenderAllowance,
                 amount,
@@ -295,7 +336,7 @@ contract Hifi {
         address signatory = ecrecover(digest, v, r, s);
         require(signatory != address(0), "Hifi::delegateBySig: invalid signature");
         require(nonce == nonces[signatory]++, "Hifi::delegateBySig: invalid nonce");
-        require(now <= expiry, "Hifi::delegateBySig: signature expired");
+        require(block.timestamp <= expiry, "Hifi::delegateBySig: signature expired");
         return _delegate(signatory, delegatee);
     }
 
@@ -348,6 +389,18 @@ contract Hifi {
             }
         }
         return checkpoints[account][lower].votes;
+    }
+
+    function swap(uint256 mftAmount) external {
+        require(mftAmount != 0, "Hifi::swap: swap amount can't be zero");
+        mft.transferFrom(msg.sender, address(1), mftAmount);
+
+        uint256 rawHifiAmount = mftAmount / swapRatio;
+
+        uint96 hifiAmount = safe96(rawHifiAmount, "Hifi::swap: swap exceeds 96 bits");
+        _mint(msg.sender, hifiAmount);
+
+        emit Swap(msg.sender, mftAmount, hifiAmount);
     }
 
     function _delegate(address delegator, address delegatee) internal {
@@ -444,7 +497,7 @@ contract Hifi {
         return a - b;
     }
 
-    function getChainId() internal pure returns (uint256) {
+    function getChainId() internal view returns (uint256) {
         uint256 chainId;
         assembly {
             chainId := chainid()
