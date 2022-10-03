@@ -4,7 +4,7 @@
 
 #### Changes:
 
-- Forked code from followed sources:
+- Forked code for governance contracts and token implementation from following sources:
   - `Uni.sol` from [Uniswap/governance/contracts/Uni.sol](https://github.com/Uniswap/governance/blob/eabd8c71ad01f61fb54ed6945162021ee419998e/contracts/Uni.sol)
   - `SafeMath.sol` from [Uniswap/governance/contracts/SafeMath.sol](https://github.com/Uniswap/governance/blob/eabd8c71ad01f61fb54ed6945162021ee419998e/contracts/SafeMath.sol)
   - `Timelock.sol` from [ampleforth/Forth/contracts/Timelock.sol](https://github.com/ampleforth/Forth/blob/e8498423870a6698e8f06a2a74a04f298f1aab82/contracts/Timelock.sol)
@@ -30,7 +30,7 @@
   - Renamed all instances of "Ampleforth" to "Hifi"
   - Renamed all instances of "Uniswap" to "Hifi Finance"
 - Remove `public` visibility modifier from Hifi token constructor.
-- Add `@notice` NatSpec tags to comments inside `GovernorBravoInterfaces.sol`.
+- Add `@notice` NatSpec tags to comments inside `GovernorBravoInterfaces.sol` to improve interface documentation.
 - Fix typo in `initialize(...)` function comment in `GovernorBravoDelegate.sol`.
 
 ---
@@ -41,15 +41,15 @@
 
 #### Changes:
 
-- Upgraded Solidity version to ^0.8.15.
-- Removed superfluous `pragma experimental ABIEncoderV2;` directives, since `ABIEncoderV2` is activated by default since Solidity v0.8.
-- Fix outdated struct initialization in [contracts/GovernorBravoDelegate.sol L129](https://github.com/hifi-finance/hifi-governance/commit/4fafc8b8db71db51730c8587e3235846123962e6#diff-f1f76a3dc930c6d6e026256b79a4ed32b935041ad4e5b73668825aba68822481L129). This is similar to the latest Compound implementation in [contracts/Governance/GovernorBravoDelegate L95](https://github.com/compound-finance/compound-protocol/blob/a3214f67b73310d547e00fc578e8355911c9d376/contracts/Governance/GovernorBravoDelegate.sol#L95), since Solidity disallows structs and arrays in memory or calldata if they contain nested mappings since v0.7.
-- Use `view` modifier for `getChainId(...)` and `getChainIdInternal(...)` functions instead of `pure`.
-- Remove superfluous `public` visibility tags from constructors.
-- Remove superfluous `SafeMath.sol`.
-- Use `type(uint256).max` instead of deprecated `uint256(-1)`.
-- Use `type(uint96).max` instead of deprecated `uint96(-1)`.
-- Use `block.timestamp` instead of deprecated `now`.
+- Upgraded Solidity version to ^0.8.15, which also triggered the following changes:
+  - Removed superfluous `pragma experimental ABIEncoderV2;` directives, since `ABIEncoderV2` is activated by default since Solidity v0.8.
+  - Fix outdated struct initialization in [contracts/GovernorBravoDelegate.sol L129](https://github.com/hifi-finance/hifi-governance/commit/4fafc8b8db71db51730c8587e3235846123962e6#diff-f1f76a3dc930c6d6e026256b79a4ed32b935041ad4e5b73668825aba68822481L129). This is similar to the latest Compound implementation in [contracts/Governance/GovernorBravoDelegate L95](https://github.com/compound-finance/compound-protocol/blob/a3214f67b73310d547e00fc578e8355911c9d376/contracts/Governance/GovernorBravoDelegate.sol#L95), since Solidity disallows structs and arrays in memory or calldata if they contain nested mappings since v0.7.
+  - Use `view` modifier for `getChainId(...)` and `getChainIdInternal(...)` functions instead of `pure`.
+  - Remove superfluous `public` visibility tags from constructors.
+  - Remove superfluous `SafeMath.sol` and refactor all affected lines to use standard Solidity arithmatic operations instead, since Solidity checks arithmatic operations by default since v0.8.
+  - Use `type(uint256).max` instead of deprecated `uint256(-1)`.
+  - Use `type(uint96).max` instead of deprecated `uint96(-1)`.
+  - Use `block.timestamp` instead of deprecated `now`.
 
 ---
 
@@ -59,7 +59,7 @@
 
 #### Changes:
 
-- Added Ampleforth token burn functionality to Hifi token. Forked code from [ampleforth/Forth/contracts/Forth.sol L134](https://github.com/ampleforth/Forth/blob/e8498423870a6698e8f06a2a74a04f298f1aab82/contracts/Forth.sol#L134) to [ampleforth/Forth/contracts/Forth.sol L176](https://github.com/ampleforth/Forth/blob/e8498423870a6698e8f06a2a74a04f298f1aab82/contracts/Forth.sol#L176).
+- Added Ampleforth token burn functionality to Hifi token by forking code directly from [ampleforth/Forth/contracts/Forth.sol L134](https://github.com/ampleforth/Forth/blob/e8498423870a6698e8f06a2a74a04f298f1aab82/contracts/Forth.sol#L134).
 
 ---
 
@@ -69,7 +69,7 @@
 
 #### Changes:
 
-- Removed Uniswap emission schedule from Hifi token. Includes the following changes:
+- Removed Uniswap emission schedule from Hifi token, which included the following changes:
 
   - Removed `mintingAllowedAfter` storage var.
   - Removed `minimumTimeBetweenMints` constant.
@@ -87,7 +87,7 @@
 
 #### Changes:
 
-- Completely removed `SafeMath.sol` file and replace SafeMath operations inside `Timelock.sol` with standard Solidity math operations.
+- Completely removed `SafeMath.sol` file and replace SafeMath operations inside `Timelock.sol` with standard Solidity arithmatic operations.
 
 ---
 
