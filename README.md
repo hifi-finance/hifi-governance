@@ -89,11 +89,52 @@ $ yarn clean
 
 ### Deploy
 
-Deploy the contracts to Hardhat Network:
+The smart contracts need to be deployed in the following order:
+
+#### Hifi Token
 
 ```sh
-$ yarn deploy --greeting "Bonjour, le monde!"
+$ yarn hardhat deploy:contract:hifi-token --account ${ACCOUNT} --minter ${MINTER} --network ${NETWORK_NAME} --confirmations 5 --print true --verify true
 ```
+
+#### Timelock
+
+```sh
+$ yarn hardhat deploy:contract:timelock --admin ${ADMIN} --delay ${DELAY} --network ${NETWORK_NAME} --confirmations 5 --print true --verify true
+```
+
+#### GovernorBravo Implementation
+
+```sh
+$ yarn hardhat deploy:contract:governor-bravo-delegate --network ${NETWORK_NAME} --confirmations 5 --print true --verify true
+```
+
+#### GovernorBravo Proxy
+
+```sh
+$ yarn hardhat deploy:contract:governor-bravo-delegator --timelock ${TIMELOCK} --hifi ${HIFI_TOKEN} --admin ${ADMIN} --implementation ${GOVERNOR_BRAVO_IMPLEMENTATION} --voting-period ${VOTING_PERIOD} --voting-delay ${VOTING_DELAY} --proposal-threshold ${PROPOSAL_THRESHOLD} --network ${NETWORK_NAME} --confirmations 5 --print true --verify true
+```
+
+**Note:** Before deploying the GovernorBravo proxy, the timelock contract admin needs to queue and execute a transaction with the following params:
+
+| Name | Type      | Data    |                            |
+| ---- | --------- | ------- | -------------------------- |
+| 0    | target    | address | `TIMELOCK`                 |
+| 1    | value     | uint256 | `0`                        |
+| 2    | signature | string  | `setPendingAdmin(address)` |
+| 3    | data      | bytes   | `PROXY`                    |
+| 4    | eta       | uint256 | `ETA`                      |
+
+**Where:**
+
+- `TIMELOCK` is the timelock contract address.
+- `PROXY` is the proxy contract address (predicted before deployment using CREATE1).
+- `ETA` is the expected time for executing the transaction (needs to be at least `block.timestamp + timelock.delay()`).
+
+**Example:**
+
+1. Queue transaction: https://goerli.etherscan.io/tx/0x59eeab99654a624b9ebb824de652acdc9c2bcb66b9d9ab90f074cd5f9eec9fa1.
+2. Execute transaction: https://goerli.etherscan.io/tx/0xbb3da328c7f7d3960c37f395cd3ff18e5144b77565e386e3b06f05472c799a2a
 
 ## Tips
 
