@@ -393,7 +393,7 @@ contract Hifi {
 
     function swap(uint256 mftAmount) external {
         require(mftAmount != 0, "Hifi::swap: swap amount can't be zero");
-        mft.transferFrom(msg.sender, address(1), mftAmount);
+        require(mft.transferFrom(msg.sender, address(1), mftAmount));
 
         uint256 rawHifiAmount = mftAmount / swapRatio;
 
