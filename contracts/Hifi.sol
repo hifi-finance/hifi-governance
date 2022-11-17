@@ -121,9 +121,9 @@ contract Hifi {
         require(account != address(0), "Hifi::_mint: mint to the zero address");
 
         uint96 supply = safe96(totalSupply, "Hifi::_mint: old supply exceeds 96 bits");
-        totalSupply = add96(supply, amount, "Hifi::_mint: amount exceeds totalSupply");
+        totalSupply = supply + amount;
 
-        balances[account] = add96(balances[account], amount, "Hifi::_mint: transfer amount overflows");
+        balances[account] = balances[account] + amount;
         emit Transfer(address(0), account, amount);
 
         // move delegates
@@ -179,11 +179,7 @@ contract Hifi {
     function burnFrom(address account, uint256 rawAmount) external {
         uint96 amount = safe96(rawAmount, "Hifi::burnFrom: rawAmount exceeds 96 bits");
 
-        uint96 decreasedAllowance = sub96(
-            allowances[account][msg.sender],
-            amount,
-            "Hifi::burnFrom: amount exceeds allowance"
-        );
+        uint96 decreasedAllowance = allowances[account][msg.sender] - amount;
         allowances[account][msg.sender] = decreasedAllowance;
         emit Approval(account, msg.sender, decreasedAllowance);
 
@@ -199,9 +195,9 @@ contract Hifi {
         require(account != address(0), "Hifi::_burn: burn from the zero address");
 
         uint96 supply = safe96(totalSupply, "Hifi::_burn: old supply exceeds 96 bits");
-        totalSupply = sub96(supply, amount, "Hifi::_burn: amount exceeds totalSupply");
+        totalSupply = supply - amount;
 
-        balances[account] = sub96(balances[account], amount, "Hifi::_burn: transfer amount overflows");
+        balances[account] = balances[account] - amount;
         emit Transfer(account, address(0), amount);
 
         // move delegates
@@ -289,11 +285,7 @@ contract Hifi {
         uint96 amount = safe96(rawAmount, "Hifi::approve: amount exceeds 96 bits");
 
         if (spender != src && spenderAllowance != type(uint96).max) {
-            uint96 newAllowance = sub96(
-                spenderAllowance,
-                amount,
-                "Hifi::transferFrom: transfer amount exceeds spender allowance"
-            );
+            uint96 newAllowance = spenderAllowance - amount;
             allowances[src][spender] = newAllowance;
 
             emit Approval(src, spender, newAllowance);
@@ -421,8 +413,8 @@ contract Hifi {
         require(src != address(0), "Hifi::_transferTokens: cannot transfer from the zero address");
         require(dst != address(0), "Hifi::_transferTokens: cannot transfer to the zero address");
 
-        balances[src] = sub96(balances[src], amount, "Hifi::_transferTokens: transfer amount exceeds balance");
-        balances[dst] = add96(balances[dst], amount, "Hifi::_transferTokens: transfer amount overflows");
+        balances[src] = balances[src] - amount;
+        balances[dst] = balances[dst] + amount;
         emit Transfer(src, dst, amount);
 
         _moveDelegates(delegates[src], delegates[dst], amount);
@@ -437,14 +429,14 @@ contract Hifi {
             if (srcRep != address(0)) {
                 uint32 srcRepNum = numCheckpoints[srcRep];
                 uint96 srcRepOld = srcRepNum > 0 ? checkpoints[srcRep][srcRepNum - 1].votes : 0;
-                uint96 srcRepNew = sub96(srcRepOld, amount, "Hifi::_moveVotes: vote amount underflows");
+                uint96 srcRepNew = srcRepOld - amount;
                 _writeCheckpoint(srcRep, srcRepNum, srcRepOld, srcRepNew);
             }
 
             if (dstRep != address(0)) {
                 uint32 dstRepNum = numCheckpoints[dstRep];
                 uint96 dstRepOld = dstRepNum > 0 ? checkpoints[dstRep][dstRepNum - 1].votes : 0;
-                uint96 dstRepNew = add96(dstRepOld, amount, "Hifi::_moveVotes: vote amount overflows");
+                uint96 dstRepNew = dstRepOld + amount;
                 _writeCheckpoint(dstRep, dstRepNum, dstRepOld, dstRepNew);
             }
         }
@@ -476,25 +468,6 @@ contract Hifi {
     function safe96(uint256 n, string memory errorMessage) internal pure returns (uint96) {
         require(n < 2**96, errorMessage);
         return uint96(n);
-    }
-
-    function add96(
-        uint96 a,
-        uint96 b,
-        string memory errorMessage
-    ) internal pure returns (uint96) {
-        uint96 c = a + b;
-        require(c >= a, errorMessage);
-        return c;
-    }
-
-    function sub96(
-        uint96 a,
-        uint96 b,
-        string memory errorMessage
-    ) internal pure returns (uint96) {
-        require(b <= a, errorMessage);
-        return a - b;
     }
 
     function getChainId() internal view returns (uint256) {
