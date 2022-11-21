@@ -41,8 +41,17 @@ contract GovernorBravoEvents {
     /// @notice Emitted when implementation is changed
     event NewImplementation(address oldImplementation, address newImplementation);
 
-    /// @notice Emitted when proposal threshold is set
-    event ProposalThresholdSet(uint256 oldProposalThreshold, uint256 newProposalThreshold);
+    /// @notice Emitted when proposal threshold  basis point is set
+    event ProposalThresholdBpSet(uint256 oldProposalThreshold, uint256 newProposalThreshold);
+
+    /// @notice Emitted when min proposal threshold basis point is set
+    event MinProposalThresholdBpSet(uint256 oldMinProposalThresholdBp, uint256 newMinProposalThresholdBp);
+
+    /// @notice Emitted when max proposal threshold basis point is set
+    event MaxProposalThresholdBpSet(uint256 oldMaxProposalThresholdBp, uint256 newMaxProposalThresholdBp);
+
+    /// @notice Emitted when quorum votes basis point is set
+    event QuorumVotesBpSet(uint256 oldQuorumVotesBp, uint256 newQuorumVotesBp);
 
     /// @notice Emitted when pendingAdmin is changed
     event NewPendingAdmin(address oldPendingAdmin, address newPendingAdmin);
@@ -75,11 +84,20 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
     /// @notice The duration of voting on a proposal, in blocks
     uint256 public votingPeriod;
 
-    /// @notice The number of votes required in order for a voter to become a proposer
-    uint256 public proposalThreshold;
+    /// @notice The number of votes required in order for a voter to become a proposer (in basis point)
+    uint256 public proposalThresholdBp;
 
     /// @notice The total number of proposals
     uint256 public proposalCount;
+
+    /// @notice The min proposal threshold in basis point (parts per 10,000)
+    uint256 public minProposalThresholdBp;
+
+    /// @notice The max proposal threshold in basis points (parts per 10,000)
+    uint256 public maxProposalThresholdBp;
+
+    /// @notice The minimum number of votes required for an account to create a proposal (in basis points (parts per 10,000))
+    uint256 public quorumVotesBp;
 
     /// @notice The address of the Hifi Protocol Timelock
     TimelockInterface public timelock;
@@ -184,5 +202,7 @@ interface TimelockInterface {
 }
 
 interface HifiInterface {
+    function totalSupply() external view returns (uint256);
+
     function getPriorVotes(address account, uint256 blockNumber) external view returns (uint96);
 }

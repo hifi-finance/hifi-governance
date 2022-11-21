@@ -65,6 +65,44 @@ const _abi = [
     inputs: [
       {
         indexed: false,
+        internalType: "uint256",
+        name: "oldMaxProposalThresholdBp",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "newMaxProposalThresholdBp",
+        type: "uint256",
+      },
+    ],
+    name: "MaxProposalThresholdBpSet",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "oldMinProposalThresholdBp",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "newMinProposalThresholdBp",
+        type: "uint256",
+      },
+    ],
+    name: "MinProposalThresholdBpSet",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
         internalType: "address",
         name: "oldAdmin",
         type: "address",
@@ -239,7 +277,26 @@ const _abi = [
         type: "uint256",
       },
     ],
-    name: "ProposalThresholdSet",
+    name: "ProposalThresholdBpSet",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "oldQuorumVotesBp",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "newQuorumVotesBp",
+        type: "uint256",
+      },
+    ],
+    name: "QuorumVotesBpSet",
     type: "event",
   },
   {

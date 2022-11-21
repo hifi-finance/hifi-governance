@@ -7,11 +7,11 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
     /// @notice The name of this contract
     string public constant name = "Hifi Governor Bravo";
 
-    /// @notice The minimum setable proposal threshold
-    uint256 public constant MIN_PROPOSAL_THRESHOLD = 75000e18; // 75,000 Hifi
+    /// @notice The default minimum setable proposal threshold basis point
+    uint256 public constant DEFAULT_MIN_PROPOSAL_THRESHOLD_Bp = 1; // 0.01% in basis points (parts per 10,000)
 
-    /// @notice The maximum setable proposal threshold
-    uint256 public constant MAX_PROPOSAL_THRESHOLD = 300000e18; // 300,000 Hifi
+    /// @notice The default maximum setable proposal threshold basis point
+    uint256 public constant DEFAULT_MAX_PROPOSAL_THRESHOLD_Bp = 200; // 2% in basis points (parts per 10,000)
 
     /// @notice The minimum setable voting period
     uint256 public constant MIN_VOTING_PERIOD = 5760; // About 24 hours
@@ -25,8 +25,8 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
     /// @notice The max setable voting delay
     uint256 public constant MAX_VOTING_DELAY = 40320; // About 1 week
 
-    /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
-    uint256 public constant quorumVotes = 600000e18; // 600,000 = 4% of Hifi
+    /// @notice The default number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
+    uint256 public constant DEFAULT_QUORUM_VOTES_BP = 200; // 2% in basis points (parts per 10,000)
 
     /// @notice The maximum number of actions that can be included in a proposal
     uint256 public constant proposalMaxOperations = 10; // 10 actions
@@ -44,14 +44,14 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
      * @param hifi_ The address of the Hifi token
      * @param votingPeriod_ The initial voting period
      * @param votingDelay_ The initial voting delay
-     * @param proposalThreshold_ The initial proposal threshold
+     * @param proposalThresholdBp_ The initial proposal threshold basis point
      */
     function initialize(
         address timelock_,
         address hifi_,
         uint256 votingPeriod_,
         uint256 votingDelay_,
-        uint256 proposalThreshold_
+        uint256 proposalThresholdBp_
     ) public {
         require(address(timelock) == address(0), "GovernorBravo::initialize: can only initialize once");
         require(msg.sender == admin, "GovernorBravo::initialize: admin only");
@@ -66,7 +66,8 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
             "GovernorBravo::initialize: invalid voting delay"
         );
         require(
-            proposalThreshold_ >= MIN_PROPOSAL_THRESHOLD && proposalThreshold_ <= MAX_PROPOSAL_THRESHOLD,
+            proposalThresholdBp_ >= DEFAULT_MIN_PROPOSAL_THRESHOLD_Bp &&
+                proposalThresholdBp_ <= DEFAULT_MAX_PROPOSAL_THRESHOLD_Bp,
             "GovernorBravo::initialize: invalid proposal threshold"
         );
 
@@ -75,7 +76,10 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         hifi = HifiInterface(hifi_);
         votingPeriod = votingPeriod_;
         votingDelay = votingDelay_;
-        proposalThreshold = proposalThreshold_;
+        proposalThresholdBp = proposalThresholdBp_;
+        minProposalThresholdBp = DEFAULT_MIN_PROPOSAL_THRESHOLD_Bp;
+        maxProposalThresholdBp = DEFAULT_MAX_PROPOSAL_THRESHOLD_Bp;
+        quorumVotesBp = DEFAULT_QUORUM_VOTES_BP;
     }
 
     /**
@@ -95,7 +99,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         string memory description
     ) public returns (uint256) {
         require(
-            hifi.getPriorVotes(msg.sender, sub256(block.number, 1)) > proposalThreshold,
+            hifi.getPriorVotes(msg.sender, sub256(block.number, 1)) > getPercentageValue(proposalThresholdBp),
             "GovernorBravo::propose: proposer votes below proposal threshold"
         );
         require(
@@ -228,7 +232,8 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         Proposal storage proposal = proposals[proposalId];
         require(
             msg.sender == proposal.proposer ||
-                hifi.getPriorVotes(proposal.proposer, sub256(block.number, 1)) < proposalThreshold,
+                hifi.getPriorVotes(proposal.proposer, sub256(block.number, 1)) <
+                getPercentageValue(proposalThresholdBp),
             "GovernorBravo::cancel: proposer above threshold"
         );
 
@@ -292,7 +297,9 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
             return ProposalState.Pending;
         } else if (block.number <= proposal.endBlock) {
             return ProposalState.Active;
-        } else if (proposal.forVotes <= proposal.againstVotes || proposal.forVotes < quorumVotes) {
+        } else if (
+            proposal.forVotes <= proposal.againstVotes || proposal.forVotes < getPercentageValue(quorumVotesBp)
+        ) {
             return ProposalState.Defeated;
         } else if (proposal.eta == 0) {
             return ProposalState.Succeeded;
@@ -416,20 +423,68 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
     }
 
     /**
-     * @notice Admin function for setting the proposal threshold
-     * @dev newProposalThreshold must be greater than the hardcoded min
-     * @param newProposalThreshold new proposal threshold
+     * @notice Admin function for setting the quorum votes basis point
+     * @param newQuorumVotesBp in basis points (parts per 10,000) e.g 1 basis point (bp) = 0.01%
      */
-    function _setProposalThreshold(uint256 newProposalThreshold) external {
+    function _setQuorumVotesBp(uint256 newQuorumVotesBp) external {
+        require(msg.sender == admin, "GovernorBravo::_setQuorumVotes: admin only");
+        require(
+            (hifi.totalSupply() * newQuorumVotesBp) >= 10_000,
+            "GovernorBravo::_setQuorumVotes: invalid quorum votes basis point"
+        );
+        uint256 oldQuorumVotesBp = quorumVotesBp;
+        quorumVotesBp = newQuorumVotesBp;
+
+        emit QuorumVotesBpSet(oldQuorumVotesBp, quorumVotesBp);
+    }
+
+    /**
+     * @notice Admin function for setting the min proposal threshold basis point
+     * @param newMinProposalThresholdBp in basis points (parts per 10,000)
+     */
+    function _setMinProposalThresholdBp(uint256 newMinProposalThresholdBp) external {
+        require(msg.sender == admin, "GovernorBravo::_setMinProposalThreshold: admin only");
+        require(
+            (hifi.totalSupply() * newMinProposalThresholdBp) >= 10_000 &&
+                newMinProposalThresholdBp < maxProposalThresholdBp,
+            "GovernorBravo::_setQuorumVotes: invalid min proposal threshold basis point"
+        );
+        uint256 oldMinProposalThresholdBp = minProposalThresholdBp;
+        minProposalThresholdBp = newMinProposalThresholdBp;
+        emit MinProposalThresholdBpSet(oldMinProposalThresholdBp, minProposalThresholdBp);
+    }
+
+    /**
+     * @notice Admin function for setting the max proposal threshold basis point
+     * @param newMaxProposalThresholdBp in basis points (parts per 10,000)
+     */
+    function _setMaxProposalThresholdBp(uint256 newMaxProposalThresholdBp) external {
+        require(msg.sender == admin, "GovernorBravo::_setMaxProposalThreshold: admin only");
+        require(
+            (hifi.totalSupply() * newMaxProposalThresholdBp) >= 10_000 &&
+                newMaxProposalThresholdBp > minProposalThresholdBp,
+            "GovernorBravo::_setQuorumVotes: invalid max proposal threshold basis point"
+        );
+        uint256 oldMaxProposalThresholdBp = maxProposalThresholdBp;
+        maxProposalThresholdBp = newMaxProposalThresholdBp;
+        emit MaxProposalThresholdBpSet(oldMaxProposalThresholdBp, maxProposalThresholdBp);
+    }
+
+    /**
+     * @notice Admin function for setting the proposal threshold basis point
+     * @dev newProposalThresholdBp must be between minProposalThresholdBp and maxProposalThresholdBp
+     * @param newProposalThresholdBp in basis point (parts per 10,000)
+     */
+    function _setProposalThresholdBp(uint256 newProposalThresholdBp) external {
         require(msg.sender == admin, "GovernorBravo::_setProposalThreshold: admin only");
         require(
-            newProposalThreshold >= MIN_PROPOSAL_THRESHOLD && newProposalThreshold <= MAX_PROPOSAL_THRESHOLD,
-            "GovernorBravo::_setProposalThreshold: invalid proposal threshold"
+            newProposalThresholdBp >= minProposalThresholdBp && newProposalThresholdBp <= maxProposalThresholdBp,
+            "GovernorBravo::_setProposalThresholdBp: invalid proposal threshold basis point"
         );
-        uint256 oldProposalThreshold = proposalThreshold;
-        proposalThreshold = newProposalThreshold;
+        uint256 oldProposalThresholdBp = proposalThresholdBp;
+        proposalThresholdBp = newProposalThresholdBp;
 
-        emit ProposalThresholdSet(oldProposalThreshold, proposalThreshold);
+        emit ProposalThresholdBpSet(oldProposalThresholdBp, proposalThresholdBp);
     }
 
     /**
@@ -493,5 +548,9 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
             chainId := chainid()
         }
         return chainId;
+    }
+
+    function getPercentageValue(uint256 bp) internal view returns (uint256) {
+        return (hifi.totalSupply() * bp) / 10_000;
     }
 }

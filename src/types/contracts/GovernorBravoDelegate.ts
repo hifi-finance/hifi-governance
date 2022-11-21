@@ -47,16 +47,20 @@ export declare namespace GovernorBravoDelegateStorageV1 {
 export interface GovernorBravoDelegateInterface extends utils.Interface {
   functions: {
     "BALLOT_TYPEHASH()": FunctionFragment;
+    "DEFAULT_MAX_PROPOSAL_THRESHOLD_Bp()": FunctionFragment;
+    "DEFAULT_MIN_PROPOSAL_THRESHOLD_Bp()": FunctionFragment;
+    "DEFAULT_QUORUM_VOTES_BP()": FunctionFragment;
     "DOMAIN_TYPEHASH()": FunctionFragment;
-    "MAX_PROPOSAL_THRESHOLD()": FunctionFragment;
     "MAX_VOTING_DELAY()": FunctionFragment;
     "MAX_VOTING_PERIOD()": FunctionFragment;
-    "MIN_PROPOSAL_THRESHOLD()": FunctionFragment;
     "MIN_VOTING_DELAY()": FunctionFragment;
     "MIN_VOTING_PERIOD()": FunctionFragment;
     "_acceptAdmin()": FunctionFragment;
+    "_setMaxProposalThresholdBp(uint256)": FunctionFragment;
+    "_setMinProposalThresholdBp(uint256)": FunctionFragment;
     "_setPendingAdmin(address)": FunctionFragment;
-    "_setProposalThreshold(uint256)": FunctionFragment;
+    "_setProposalThresholdBp(uint256)": FunctionFragment;
+    "_setQuorumVotesBp(uint256)": FunctionFragment;
     "_setVotingDelay(uint256)": FunctionFragment;
     "_setVotingPeriod(uint256)": FunctionFragment;
     "admin()": FunctionFragment;
@@ -71,15 +75,17 @@ export interface GovernorBravoDelegateInterface extends utils.Interface {
     "implementation()": FunctionFragment;
     "initialize(address,address,uint256,uint256,uint256)": FunctionFragment;
     "latestProposalIds(address)": FunctionFragment;
+    "maxProposalThresholdBp()": FunctionFragment;
+    "minProposalThresholdBp()": FunctionFragment;
     "name()": FunctionFragment;
     "pendingAdmin()": FunctionFragment;
     "proposalCount()": FunctionFragment;
     "proposalMaxOperations()": FunctionFragment;
-    "proposalThreshold()": FunctionFragment;
+    "proposalThresholdBp()": FunctionFragment;
     "proposals(uint256)": FunctionFragment;
     "propose(address[],uint256[],string[],bytes[],string)": FunctionFragment;
     "queue(uint256)": FunctionFragment;
-    "quorumVotes()": FunctionFragment;
+    "quorumVotesBp()": FunctionFragment;
     "state(uint256)": FunctionFragment;
     "timelock()": FunctionFragment;
     "votingDelay()": FunctionFragment;
@@ -89,16 +95,20 @@ export interface GovernorBravoDelegateInterface extends utils.Interface {
   getFunction(
     nameOrSignatureOrTopic:
       | "BALLOT_TYPEHASH"
+      | "DEFAULT_MAX_PROPOSAL_THRESHOLD_Bp"
+      | "DEFAULT_MIN_PROPOSAL_THRESHOLD_Bp"
+      | "DEFAULT_QUORUM_VOTES_BP"
       | "DOMAIN_TYPEHASH"
-      | "MAX_PROPOSAL_THRESHOLD"
       | "MAX_VOTING_DELAY"
       | "MAX_VOTING_PERIOD"
-      | "MIN_PROPOSAL_THRESHOLD"
       | "MIN_VOTING_DELAY"
       | "MIN_VOTING_PERIOD"
       | "_acceptAdmin"
+      | "_setMaxProposalThresholdBp"
+      | "_setMinProposalThresholdBp"
       | "_setPendingAdmin"
-      | "_setProposalThreshold"
+      | "_setProposalThresholdBp"
+      | "_setQuorumVotesBp"
       | "_setVotingDelay"
       | "_setVotingPeriod"
       | "admin"
@@ -113,15 +123,17 @@ export interface GovernorBravoDelegateInterface extends utils.Interface {
       | "implementation"
       | "initialize"
       | "latestProposalIds"
+      | "maxProposalThresholdBp"
+      | "minProposalThresholdBp"
       | "name"
       | "pendingAdmin"
       | "proposalCount"
       | "proposalMaxOperations"
-      | "proposalThreshold"
+      | "proposalThresholdBp"
       | "proposals"
       | "propose"
       | "queue"
-      | "quorumVotes"
+      | "quorumVotesBp"
       | "state"
       | "timelock"
       | "votingDelay"
@@ -133,11 +145,19 @@ export interface GovernorBravoDelegateInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "DOMAIN_TYPEHASH",
+    functionFragment: "DEFAULT_MAX_PROPOSAL_THRESHOLD_Bp",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "MAX_PROPOSAL_THRESHOLD",
+    functionFragment: "DEFAULT_MIN_PROPOSAL_THRESHOLD_Bp",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "DEFAULT_QUORUM_VOTES_BP",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "DOMAIN_TYPEHASH",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -146,10 +166,6 @@ export interface GovernorBravoDelegateInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "MAX_VOTING_PERIOD",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "MIN_PROPOSAL_THRESHOLD",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -165,11 +181,23 @@ export interface GovernorBravoDelegateInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "_setMaxProposalThresholdBp",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "_setMinProposalThresholdBp",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "_setPendingAdmin",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "_setProposalThreshold",
+    functionFragment: "_setProposalThresholdBp",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "_setQuorumVotesBp",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
@@ -238,6 +266,14 @@ export interface GovernorBravoDelegateInterface extends utils.Interface {
     functionFragment: "latestProposalIds",
     values: [PromiseOrValue<string>]
   ): string;
+  encodeFunctionData(
+    functionFragment: "maxProposalThresholdBp",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "minProposalThresholdBp",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "pendingAdmin",
@@ -252,7 +288,7 @@ export interface GovernorBravoDelegateInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "proposalThreshold",
+    functionFragment: "proposalThresholdBp",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -274,7 +310,7 @@ export interface GovernorBravoDelegateInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "quorumVotes",
+    functionFragment: "quorumVotesBp",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -296,11 +332,19 @@ export interface GovernorBravoDelegateInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "DOMAIN_TYPEHASH",
+    functionFragment: "DEFAULT_MAX_PROPOSAL_THRESHOLD_Bp",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "MAX_PROPOSAL_THRESHOLD",
+    functionFragment: "DEFAULT_MIN_PROPOSAL_THRESHOLD_Bp",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "DEFAULT_QUORUM_VOTES_BP",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "DOMAIN_TYPEHASH",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -309,10 +353,6 @@ export interface GovernorBravoDelegateInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "MAX_VOTING_PERIOD",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "MIN_PROPOSAL_THRESHOLD",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -328,11 +368,23 @@ export interface GovernorBravoDelegateInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "_setMaxProposalThresholdBp",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "_setMinProposalThresholdBp",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "_setPendingAdmin",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "_setProposalThreshold",
+    functionFragment: "_setProposalThresholdBp",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "_setQuorumVotesBp",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -367,6 +419,14 @@ export interface GovernorBravoDelegateInterface extends utils.Interface {
     functionFragment: "latestProposalIds",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "maxProposalThresholdBp",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "minProposalThresholdBp",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "pendingAdmin",
@@ -381,14 +441,14 @@ export interface GovernorBravoDelegateInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "proposalThreshold",
+    functionFragment: "proposalThresholdBp",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "proposals", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "propose", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "queue", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "quorumVotes",
+    functionFragment: "quorumVotesBp",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "state", data: BytesLike): Result;
@@ -403,6 +463,8 @@ export interface GovernorBravoDelegateInterface extends utils.Interface {
   ): Result;
 
   events: {
+    "MaxProposalThresholdBpSet(uint256,uint256)": EventFragment;
+    "MinProposalThresholdBpSet(uint256,uint256)": EventFragment;
     "NewAdmin(address,address)": EventFragment;
     "NewImplementation(address,address)": EventFragment;
     "NewPendingAdmin(address,address)": EventFragment;
@@ -410,12 +472,15 @@ export interface GovernorBravoDelegateInterface extends utils.Interface {
     "ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)": EventFragment;
     "ProposalExecuted(uint256)": EventFragment;
     "ProposalQueued(uint256,uint256)": EventFragment;
-    "ProposalThresholdSet(uint256,uint256)": EventFragment;
+    "ProposalThresholdBpSet(uint256,uint256)": EventFragment;
+    "QuorumVotesBpSet(uint256,uint256)": EventFragment;
     "VoteCast(address,uint256,uint8,uint256,string)": EventFragment;
     "VotingDelaySet(uint256,uint256)": EventFragment;
     "VotingPeriodSet(uint256,uint256)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "MaxProposalThresholdBpSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "MinProposalThresholdBpSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NewAdmin"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NewImplementation"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NewPendingAdmin"): EventFragment;
@@ -423,11 +488,36 @@ export interface GovernorBravoDelegateInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "ProposalCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProposalExecuted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProposalQueued"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ProposalThresholdSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalThresholdBpSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "QuorumVotesBpSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "VoteCast"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "VotingDelaySet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "VotingPeriodSet"): EventFragment;
 }
+
+export interface MaxProposalThresholdBpSetEventObject {
+  oldMaxProposalThresholdBp: BigNumber;
+  newMaxProposalThresholdBp: BigNumber;
+}
+export type MaxProposalThresholdBpSetEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  MaxProposalThresholdBpSetEventObject
+>;
+
+export type MaxProposalThresholdBpSetEventFilter =
+  TypedEventFilter<MaxProposalThresholdBpSetEvent>;
+
+export interface MinProposalThresholdBpSetEventObject {
+  oldMinProposalThresholdBp: BigNumber;
+  newMinProposalThresholdBp: BigNumber;
+}
+export type MinProposalThresholdBpSetEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  MinProposalThresholdBpSetEventObject
+>;
+
+export type MinProposalThresholdBpSetEventFilter =
+  TypedEventFilter<MinProposalThresholdBpSetEvent>;
 
 export interface NewAdminEventObject {
   oldAdmin: string;
@@ -521,17 +611,29 @@ export type ProposalQueuedEvent = TypedEvent<
 
 export type ProposalQueuedEventFilter = TypedEventFilter<ProposalQueuedEvent>;
 
-export interface ProposalThresholdSetEventObject {
+export interface ProposalThresholdBpSetEventObject {
   oldProposalThreshold: BigNumber;
   newProposalThreshold: BigNumber;
 }
-export type ProposalThresholdSetEvent = TypedEvent<
+export type ProposalThresholdBpSetEvent = TypedEvent<
   [BigNumber, BigNumber],
-  ProposalThresholdSetEventObject
+  ProposalThresholdBpSetEventObject
 >;
 
-export type ProposalThresholdSetEventFilter =
-  TypedEventFilter<ProposalThresholdSetEvent>;
+export type ProposalThresholdBpSetEventFilter =
+  TypedEventFilter<ProposalThresholdBpSetEvent>;
+
+export interface QuorumVotesBpSetEventObject {
+  oldQuorumVotesBp: BigNumber;
+  newQuorumVotesBp: BigNumber;
+}
+export type QuorumVotesBpSetEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  QuorumVotesBpSetEventObject
+>;
+
+export type QuorumVotesBpSetEventFilter =
+  TypedEventFilter<QuorumVotesBpSetEvent>;
 
 export interface VoteCastEventObject {
   voter: string;
@@ -598,15 +700,21 @@ export interface GovernorBravoDelegate extends BaseContract {
   functions: {
     BALLOT_TYPEHASH(overrides?: CallOverrides): Promise<[string]>;
 
-    DOMAIN_TYPEHASH(overrides?: CallOverrides): Promise<[string]>;
+    DEFAULT_MAX_PROPOSAL_THRESHOLD_Bp(
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
-    MAX_PROPOSAL_THRESHOLD(overrides?: CallOverrides): Promise<[BigNumber]>;
+    DEFAULT_MIN_PROPOSAL_THRESHOLD_Bp(
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    DEFAULT_QUORUM_VOTES_BP(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    DOMAIN_TYPEHASH(overrides?: CallOverrides): Promise<[string]>;
 
     MAX_VOTING_DELAY(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     MAX_VOTING_PERIOD(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    MIN_PROPOSAL_THRESHOLD(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     MIN_VOTING_DELAY(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -616,13 +724,28 @@ export interface GovernorBravoDelegate extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    _setMaxProposalThresholdBp(
+      newMaxProposalThresholdBp: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    _setMinProposalThresholdBp(
+      newMinProposalThresholdBp: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     _setPendingAdmin(
       newPendingAdmin: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    _setProposalThreshold(
-      newProposalThreshold: PromiseOrValue<BigNumberish>,
+    _setProposalThresholdBp(
+      newProposalThresholdBp: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    _setQuorumVotesBp(
+      newQuorumVotesBp: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -697,7 +820,7 @@ export interface GovernorBravoDelegate extends BaseContract {
       hifi_: PromiseOrValue<string>,
       votingPeriod_: PromiseOrValue<BigNumberish>,
       votingDelay_: PromiseOrValue<BigNumberish>,
-      proposalThreshold_: PromiseOrValue<BigNumberish>,
+      proposalThresholdBp_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -705,6 +828,10 @@ export interface GovernorBravoDelegate extends BaseContract {
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    maxProposalThresholdBp(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    minProposalThresholdBp(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     name(overrides?: CallOverrides): Promise<[string]>;
 
@@ -714,7 +841,7 @@ export interface GovernorBravoDelegate extends BaseContract {
 
     proposalMaxOperations(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    proposalThreshold(overrides?: CallOverrides): Promise<[BigNumber]>;
+    proposalThresholdBp(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     proposals(
       arg0: PromiseOrValue<BigNumberish>,
@@ -759,7 +886,7 @@ export interface GovernorBravoDelegate extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    quorumVotes(overrides?: CallOverrides): Promise<[BigNumber]>;
+    quorumVotesBp(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     state(
       proposalId: PromiseOrValue<BigNumberish>,
@@ -775,15 +902,21 @@ export interface GovernorBravoDelegate extends BaseContract {
 
   BALLOT_TYPEHASH(overrides?: CallOverrides): Promise<string>;
 
-  DOMAIN_TYPEHASH(overrides?: CallOverrides): Promise<string>;
+  DEFAULT_MAX_PROPOSAL_THRESHOLD_Bp(
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
-  MAX_PROPOSAL_THRESHOLD(overrides?: CallOverrides): Promise<BigNumber>;
+  DEFAULT_MIN_PROPOSAL_THRESHOLD_Bp(
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  DEFAULT_QUORUM_VOTES_BP(overrides?: CallOverrides): Promise<BigNumber>;
+
+  DOMAIN_TYPEHASH(overrides?: CallOverrides): Promise<string>;
 
   MAX_VOTING_DELAY(overrides?: CallOverrides): Promise<BigNumber>;
 
   MAX_VOTING_PERIOD(overrides?: CallOverrides): Promise<BigNumber>;
-
-  MIN_PROPOSAL_THRESHOLD(overrides?: CallOverrides): Promise<BigNumber>;
 
   MIN_VOTING_DELAY(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -793,13 +926,28 @@ export interface GovernorBravoDelegate extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  _setMaxProposalThresholdBp(
+    newMaxProposalThresholdBp: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  _setMinProposalThresholdBp(
+    newMinProposalThresholdBp: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   _setPendingAdmin(
     newPendingAdmin: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  _setProposalThreshold(
-    newProposalThreshold: PromiseOrValue<BigNumberish>,
+  _setProposalThresholdBp(
+    newProposalThresholdBp: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  _setQuorumVotesBp(
+    newQuorumVotesBp: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -874,7 +1022,7 @@ export interface GovernorBravoDelegate extends BaseContract {
     hifi_: PromiseOrValue<string>,
     votingPeriod_: PromiseOrValue<BigNumberish>,
     votingDelay_: PromiseOrValue<BigNumberish>,
-    proposalThreshold_: PromiseOrValue<BigNumberish>,
+    proposalThresholdBp_: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -882,6 +1030,10 @@ export interface GovernorBravoDelegate extends BaseContract {
     arg0: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  maxProposalThresholdBp(overrides?: CallOverrides): Promise<BigNumber>;
+
+  minProposalThresholdBp(overrides?: CallOverrides): Promise<BigNumber>;
 
   name(overrides?: CallOverrides): Promise<string>;
 
@@ -891,7 +1043,7 @@ export interface GovernorBravoDelegate extends BaseContract {
 
   proposalMaxOperations(overrides?: CallOverrides): Promise<BigNumber>;
 
-  proposalThreshold(overrides?: CallOverrides): Promise<BigNumber>;
+  proposalThresholdBp(overrides?: CallOverrides): Promise<BigNumber>;
 
   proposals(
     arg0: PromiseOrValue<BigNumberish>,
@@ -936,7 +1088,7 @@ export interface GovernorBravoDelegate extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  quorumVotes(overrides?: CallOverrides): Promise<BigNumber>;
+  quorumVotesBp(overrides?: CallOverrides): Promise<BigNumber>;
 
   state(
     proposalId: PromiseOrValue<BigNumberish>,
@@ -952,15 +1104,21 @@ export interface GovernorBravoDelegate extends BaseContract {
   callStatic: {
     BALLOT_TYPEHASH(overrides?: CallOverrides): Promise<string>;
 
-    DOMAIN_TYPEHASH(overrides?: CallOverrides): Promise<string>;
+    DEFAULT_MAX_PROPOSAL_THRESHOLD_Bp(
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
-    MAX_PROPOSAL_THRESHOLD(overrides?: CallOverrides): Promise<BigNumber>;
+    DEFAULT_MIN_PROPOSAL_THRESHOLD_Bp(
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    DEFAULT_QUORUM_VOTES_BP(overrides?: CallOverrides): Promise<BigNumber>;
+
+    DOMAIN_TYPEHASH(overrides?: CallOverrides): Promise<string>;
 
     MAX_VOTING_DELAY(overrides?: CallOverrides): Promise<BigNumber>;
 
     MAX_VOTING_PERIOD(overrides?: CallOverrides): Promise<BigNumber>;
-
-    MIN_PROPOSAL_THRESHOLD(overrides?: CallOverrides): Promise<BigNumber>;
 
     MIN_VOTING_DELAY(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -968,13 +1126,28 @@ export interface GovernorBravoDelegate extends BaseContract {
 
     _acceptAdmin(overrides?: CallOverrides): Promise<void>;
 
+    _setMaxProposalThresholdBp(
+      newMaxProposalThresholdBp: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    _setMinProposalThresholdBp(
+      newMinProposalThresholdBp: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     _setPendingAdmin(
       newPendingAdmin: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    _setProposalThreshold(
-      newProposalThreshold: PromiseOrValue<BigNumberish>,
+    _setProposalThresholdBp(
+      newProposalThresholdBp: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    _setQuorumVotesBp(
+      newQuorumVotesBp: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1049,7 +1222,7 @@ export interface GovernorBravoDelegate extends BaseContract {
       hifi_: PromiseOrValue<string>,
       votingPeriod_: PromiseOrValue<BigNumberish>,
       votingDelay_: PromiseOrValue<BigNumberish>,
-      proposalThreshold_: PromiseOrValue<BigNumberish>,
+      proposalThresholdBp_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1057,6 +1230,10 @@ export interface GovernorBravoDelegate extends BaseContract {
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    maxProposalThresholdBp(overrides?: CallOverrides): Promise<BigNumber>;
+
+    minProposalThresholdBp(overrides?: CallOverrides): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<string>;
 
@@ -1066,7 +1243,7 @@ export interface GovernorBravoDelegate extends BaseContract {
 
     proposalMaxOperations(overrides?: CallOverrides): Promise<BigNumber>;
 
-    proposalThreshold(overrides?: CallOverrides): Promise<BigNumber>;
+    proposalThresholdBp(overrides?: CallOverrides): Promise<BigNumber>;
 
     proposals(
       arg0: PromiseOrValue<BigNumberish>,
@@ -1111,7 +1288,7 @@ export interface GovernorBravoDelegate extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    quorumVotes(overrides?: CallOverrides): Promise<BigNumber>;
+    quorumVotesBp(overrides?: CallOverrides): Promise<BigNumber>;
 
     state(
       proposalId: PromiseOrValue<BigNumberish>,
@@ -1126,6 +1303,24 @@ export interface GovernorBravoDelegate extends BaseContract {
   };
 
   filters: {
+    "MaxProposalThresholdBpSet(uint256,uint256)"(
+      oldMaxProposalThresholdBp?: null,
+      newMaxProposalThresholdBp?: null
+    ): MaxProposalThresholdBpSetEventFilter;
+    MaxProposalThresholdBpSet(
+      oldMaxProposalThresholdBp?: null,
+      newMaxProposalThresholdBp?: null
+    ): MaxProposalThresholdBpSetEventFilter;
+
+    "MinProposalThresholdBpSet(uint256,uint256)"(
+      oldMinProposalThresholdBp?: null,
+      newMinProposalThresholdBp?: null
+    ): MinProposalThresholdBpSetEventFilter;
+    MinProposalThresholdBpSet(
+      oldMinProposalThresholdBp?: null,
+      newMinProposalThresholdBp?: null
+    ): MinProposalThresholdBpSetEventFilter;
+
     "NewAdmin(address,address)"(
       oldAdmin?: null,
       newAdmin?: null
@@ -1185,14 +1380,23 @@ export interface GovernorBravoDelegate extends BaseContract {
     ): ProposalQueuedEventFilter;
     ProposalQueued(id?: null, eta?: null): ProposalQueuedEventFilter;
 
-    "ProposalThresholdSet(uint256,uint256)"(
+    "ProposalThresholdBpSet(uint256,uint256)"(
       oldProposalThreshold?: null,
       newProposalThreshold?: null
-    ): ProposalThresholdSetEventFilter;
-    ProposalThresholdSet(
+    ): ProposalThresholdBpSetEventFilter;
+    ProposalThresholdBpSet(
       oldProposalThreshold?: null,
       newProposalThreshold?: null
-    ): ProposalThresholdSetEventFilter;
+    ): ProposalThresholdBpSetEventFilter;
+
+    "QuorumVotesBpSet(uint256,uint256)"(
+      oldQuorumVotesBp?: null,
+      newQuorumVotesBp?: null
+    ): QuorumVotesBpSetEventFilter;
+    QuorumVotesBpSet(
+      oldQuorumVotesBp?: null,
+      newQuorumVotesBp?: null
+    ): QuorumVotesBpSetEventFilter;
 
     "VoteCast(address,uint256,uint8,uint256,string)"(
       voter?: PromiseOrValue<string> | null,
@@ -1231,15 +1435,21 @@ export interface GovernorBravoDelegate extends BaseContract {
   estimateGas: {
     BALLOT_TYPEHASH(overrides?: CallOverrides): Promise<BigNumber>;
 
-    DOMAIN_TYPEHASH(overrides?: CallOverrides): Promise<BigNumber>;
+    DEFAULT_MAX_PROPOSAL_THRESHOLD_Bp(
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
-    MAX_PROPOSAL_THRESHOLD(overrides?: CallOverrides): Promise<BigNumber>;
+    DEFAULT_MIN_PROPOSAL_THRESHOLD_Bp(
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    DEFAULT_QUORUM_VOTES_BP(overrides?: CallOverrides): Promise<BigNumber>;
+
+    DOMAIN_TYPEHASH(overrides?: CallOverrides): Promise<BigNumber>;
 
     MAX_VOTING_DELAY(overrides?: CallOverrides): Promise<BigNumber>;
 
     MAX_VOTING_PERIOD(overrides?: CallOverrides): Promise<BigNumber>;
-
-    MIN_PROPOSAL_THRESHOLD(overrides?: CallOverrides): Promise<BigNumber>;
 
     MIN_VOTING_DELAY(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1249,13 +1459,28 @@ export interface GovernorBravoDelegate extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    _setMaxProposalThresholdBp(
+      newMaxProposalThresholdBp: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    _setMinProposalThresholdBp(
+      newMinProposalThresholdBp: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     _setPendingAdmin(
       newPendingAdmin: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    _setProposalThreshold(
-      newProposalThreshold: PromiseOrValue<BigNumberish>,
+    _setProposalThresholdBp(
+      newProposalThresholdBp: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    _setQuorumVotesBp(
+      newQuorumVotesBp: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1323,7 +1548,7 @@ export interface GovernorBravoDelegate extends BaseContract {
       hifi_: PromiseOrValue<string>,
       votingPeriod_: PromiseOrValue<BigNumberish>,
       votingDelay_: PromiseOrValue<BigNumberish>,
-      proposalThreshold_: PromiseOrValue<BigNumberish>,
+      proposalThresholdBp_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1331,6 +1556,10 @@ export interface GovernorBravoDelegate extends BaseContract {
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    maxProposalThresholdBp(overrides?: CallOverrides): Promise<BigNumber>;
+
+    minProposalThresholdBp(overrides?: CallOverrides): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1340,7 +1569,7 @@ export interface GovernorBravoDelegate extends BaseContract {
 
     proposalMaxOperations(overrides?: CallOverrides): Promise<BigNumber>;
 
-    proposalThreshold(overrides?: CallOverrides): Promise<BigNumber>;
+    proposalThresholdBp(overrides?: CallOverrides): Promise<BigNumber>;
 
     proposals(
       arg0: PromiseOrValue<BigNumberish>,
@@ -1361,7 +1590,7 @@ export interface GovernorBravoDelegate extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    quorumVotes(overrides?: CallOverrides): Promise<BigNumber>;
+    quorumVotesBp(overrides?: CallOverrides): Promise<BigNumber>;
 
     state(
       proposalId: PromiseOrValue<BigNumberish>,
@@ -1378,19 +1607,23 @@ export interface GovernorBravoDelegate extends BaseContract {
   populateTransaction: {
     BALLOT_TYPEHASH(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    DOMAIN_TYPEHASH(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    MAX_PROPOSAL_THRESHOLD(
+    DEFAULT_MAX_PROPOSAL_THRESHOLD_Bp(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    DEFAULT_MIN_PROPOSAL_THRESHOLD_Bp(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    DEFAULT_QUORUM_VOTES_BP(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    DOMAIN_TYPEHASH(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     MAX_VOTING_DELAY(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     MAX_VOTING_PERIOD(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    MIN_PROPOSAL_THRESHOLD(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     MIN_VOTING_DELAY(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1400,13 +1633,28 @@ export interface GovernorBravoDelegate extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    _setMaxProposalThresholdBp(
+      newMaxProposalThresholdBp: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    _setMinProposalThresholdBp(
+      newMinProposalThresholdBp: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     _setPendingAdmin(
       newPendingAdmin: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    _setProposalThreshold(
-      newProposalThreshold: PromiseOrValue<BigNumberish>,
+    _setProposalThresholdBp(
+      newProposalThresholdBp: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    _setQuorumVotesBp(
+      newQuorumVotesBp: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1474,12 +1722,20 @@ export interface GovernorBravoDelegate extends BaseContract {
       hifi_: PromiseOrValue<string>,
       votingPeriod_: PromiseOrValue<BigNumberish>,
       votingDelay_: PromiseOrValue<BigNumberish>,
-      proposalThreshold_: PromiseOrValue<BigNumberish>,
+      proposalThresholdBp_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     latestProposalIds(
       arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    maxProposalThresholdBp(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    minProposalThresholdBp(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1493,7 +1749,9 @@ export interface GovernorBravoDelegate extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    proposalThreshold(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    proposalThresholdBp(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     proposals(
       arg0: PromiseOrValue<BigNumberish>,
@@ -1514,7 +1772,7 @@ export interface GovernorBravoDelegate extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    quorumVotes(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    quorumVotesBp(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     state(
       proposalId: PromiseOrValue<BigNumberish>,

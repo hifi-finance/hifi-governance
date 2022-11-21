@@ -73,6 +73,8 @@ export interface GovernorBravoDelegatorInterface extends utils.Interface {
   ): Result;
 
   events: {
+    "MaxProposalThresholdBpSet(uint256,uint256)": EventFragment;
+    "MinProposalThresholdBpSet(uint256,uint256)": EventFragment;
     "NewAdmin(address,address)": EventFragment;
     "NewImplementation(address,address)": EventFragment;
     "NewPendingAdmin(address,address)": EventFragment;
@@ -80,12 +82,15 @@ export interface GovernorBravoDelegatorInterface extends utils.Interface {
     "ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)": EventFragment;
     "ProposalExecuted(uint256)": EventFragment;
     "ProposalQueued(uint256,uint256)": EventFragment;
-    "ProposalThresholdSet(uint256,uint256)": EventFragment;
+    "ProposalThresholdBpSet(uint256,uint256)": EventFragment;
+    "QuorumVotesBpSet(uint256,uint256)": EventFragment;
     "VoteCast(address,uint256,uint8,uint256,string)": EventFragment;
     "VotingDelaySet(uint256,uint256)": EventFragment;
     "VotingPeriodSet(uint256,uint256)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "MaxProposalThresholdBpSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "MinProposalThresholdBpSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NewAdmin"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NewImplementation"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NewPendingAdmin"): EventFragment;
@@ -93,11 +98,36 @@ export interface GovernorBravoDelegatorInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "ProposalCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProposalExecuted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProposalQueued"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ProposalThresholdSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalThresholdBpSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "QuorumVotesBpSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "VoteCast"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "VotingDelaySet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "VotingPeriodSet"): EventFragment;
 }
+
+export interface MaxProposalThresholdBpSetEventObject {
+  oldMaxProposalThresholdBp: BigNumber;
+  newMaxProposalThresholdBp: BigNumber;
+}
+export type MaxProposalThresholdBpSetEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  MaxProposalThresholdBpSetEventObject
+>;
+
+export type MaxProposalThresholdBpSetEventFilter =
+  TypedEventFilter<MaxProposalThresholdBpSetEvent>;
+
+export interface MinProposalThresholdBpSetEventObject {
+  oldMinProposalThresholdBp: BigNumber;
+  newMinProposalThresholdBp: BigNumber;
+}
+export type MinProposalThresholdBpSetEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  MinProposalThresholdBpSetEventObject
+>;
+
+export type MinProposalThresholdBpSetEventFilter =
+  TypedEventFilter<MinProposalThresholdBpSetEvent>;
 
 export interface NewAdminEventObject {
   oldAdmin: string;
@@ -191,17 +221,29 @@ export type ProposalQueuedEvent = TypedEvent<
 
 export type ProposalQueuedEventFilter = TypedEventFilter<ProposalQueuedEvent>;
 
-export interface ProposalThresholdSetEventObject {
+export interface ProposalThresholdBpSetEventObject {
   oldProposalThreshold: BigNumber;
   newProposalThreshold: BigNumber;
 }
-export type ProposalThresholdSetEvent = TypedEvent<
+export type ProposalThresholdBpSetEvent = TypedEvent<
   [BigNumber, BigNumber],
-  ProposalThresholdSetEventObject
+  ProposalThresholdBpSetEventObject
 >;
 
-export type ProposalThresholdSetEventFilter =
-  TypedEventFilter<ProposalThresholdSetEvent>;
+export type ProposalThresholdBpSetEventFilter =
+  TypedEventFilter<ProposalThresholdBpSetEvent>;
+
+export interface QuorumVotesBpSetEventObject {
+  oldQuorumVotesBp: BigNumber;
+  newQuorumVotesBp: BigNumber;
+}
+export type QuorumVotesBpSetEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  QuorumVotesBpSetEventObject
+>;
+
+export type QuorumVotesBpSetEventFilter =
+  TypedEventFilter<QuorumVotesBpSetEvent>;
 
 export interface VoteCastEventObject {
   voter: string;
@@ -303,6 +345,24 @@ export interface GovernorBravoDelegator extends BaseContract {
   };
 
   filters: {
+    "MaxProposalThresholdBpSet(uint256,uint256)"(
+      oldMaxProposalThresholdBp?: null,
+      newMaxProposalThresholdBp?: null
+    ): MaxProposalThresholdBpSetEventFilter;
+    MaxProposalThresholdBpSet(
+      oldMaxProposalThresholdBp?: null,
+      newMaxProposalThresholdBp?: null
+    ): MaxProposalThresholdBpSetEventFilter;
+
+    "MinProposalThresholdBpSet(uint256,uint256)"(
+      oldMinProposalThresholdBp?: null,
+      newMinProposalThresholdBp?: null
+    ): MinProposalThresholdBpSetEventFilter;
+    MinProposalThresholdBpSet(
+      oldMinProposalThresholdBp?: null,
+      newMinProposalThresholdBp?: null
+    ): MinProposalThresholdBpSetEventFilter;
+
     "NewAdmin(address,address)"(
       oldAdmin?: null,
       newAdmin?: null
@@ -362,14 +422,23 @@ export interface GovernorBravoDelegator extends BaseContract {
     ): ProposalQueuedEventFilter;
     ProposalQueued(id?: null, eta?: null): ProposalQueuedEventFilter;
 
-    "ProposalThresholdSet(uint256,uint256)"(
+    "ProposalThresholdBpSet(uint256,uint256)"(
       oldProposalThreshold?: null,
       newProposalThreshold?: null
-    ): ProposalThresholdSetEventFilter;
-    ProposalThresholdSet(
+    ): ProposalThresholdBpSetEventFilter;
+    ProposalThresholdBpSet(
       oldProposalThreshold?: null,
       newProposalThreshold?: null
-    ): ProposalThresholdSetEventFilter;
+    ): ProposalThresholdBpSetEventFilter;
+
+    "QuorumVotesBpSet(uint256,uint256)"(
+      oldQuorumVotesBp?: null,
+      newQuorumVotesBp?: null
+    ): QuorumVotesBpSetEventFilter;
+    QuorumVotesBpSet(
+      oldQuorumVotesBp?: null,
+      newQuorumVotesBp?: null
+    ): QuorumVotesBpSetEventFilter;
 
     "VoteCast(address,uint256,uint8,uint256,string)"(
       voter?: PromiseOrValue<string> | null,
