@@ -20,7 +20,7 @@ contract Hifi {
     uint8 public constant swapRatio = 100;
 
     /// @notice Total number of tokens in circulation
-    uint256 public totalSupply = 1_000_000_000e18; // 1 billion Hifi
+    uint256 public totalSupply = 26_250_000e18; // 26.25 million Hifi
 
     /// @notice Address which may mint new tokens
     address public minter;

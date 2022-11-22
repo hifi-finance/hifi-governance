@@ -8,10 +8,14 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
     string public constant name = "Hifi Governor Bravo";
 
     /// @notice The minimum setable proposal threshold
-    uint256 public constant MIN_PROPOSAL_THRESHOLD = 75000e18; // 75,000 Hifi
+    function MIN_PROPOSAL_THRESHOLD() public view returns (uint256) {
+        return hifi.totalSupply() / 10000; // 0.01% of Hifi
+    }
 
     /// @notice The maximum setable proposal threshold
-    uint256 public constant MAX_PROPOSAL_THRESHOLD = 300000e18; // 300,000 Hifi
+    function MAX_PROPOSAL_THRESHOLD() public view returns (uint256) {
+        return hifi.totalSupply() / 100; // 1% of Hifi
+    }
 
     /// @notice The minimum setable voting period
     uint256 public constant MIN_VOTING_PERIOD = 5760; // About 24 hours
@@ -26,7 +30,9 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
     uint256 public constant MAX_VOTING_DELAY = 40320; // About 1 week
 
     /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
-    uint256 public constant quorumVotes = 600000e18; // 600,000 = 4% of Hifi
+    function quorumVotes() public view returns (uint256) {
+        return hifi.totalSupply() / 50; // 2% of Hifi
+    }
 
     /// @notice The maximum number of actions that can be included in a proposal
     uint256 public constant proposalMaxOperations = 10; // 10 actions
@@ -66,7 +72,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
             "GovernorBravo::initialize: invalid voting delay"
         );
         require(
-            proposalThreshold_ >= MIN_PROPOSAL_THRESHOLD && proposalThreshold_ <= MAX_PROPOSAL_THRESHOLD,
+            proposalThreshold_ >= MIN_PROPOSAL_THRESHOLD() && proposalThreshold_ <= MAX_PROPOSAL_THRESHOLD(),
             "GovernorBravo::initialize: invalid proposal threshold"
         );
 
@@ -292,7 +298,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
             return ProposalState.Pending;
         } else if (block.number <= proposal.endBlock) {
             return ProposalState.Active;
-        } else if (proposal.forVotes <= proposal.againstVotes || proposal.forVotes < quorumVotes) {
+        } else if (proposal.forVotes <= proposal.againstVotes || proposal.forVotes < quorumVotes()) {
             return ProposalState.Defeated;
         } else if (proposal.eta == 0) {
             return ProposalState.Succeeded;
@@ -423,7 +429,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
     function _setProposalThreshold(uint256 newProposalThreshold) external {
         require(msg.sender == admin, "GovernorBravo::_setProposalThreshold: admin only");
         require(
-            newProposalThreshold >= MIN_PROPOSAL_THRESHOLD && newProposalThreshold <= MAX_PROPOSAL_THRESHOLD,
+            newProposalThreshold >= MIN_PROPOSAL_THRESHOLD() && newProposalThreshold <= MAX_PROPOSAL_THRESHOLD(),
             "GovernorBravo::_setProposalThreshold: invalid proposal threshold"
         );
         uint256 oldProposalThreshold = proposalThreshold;
