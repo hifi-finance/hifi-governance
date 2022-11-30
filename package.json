@@ -1,6 +1,6 @@
 {
-  "name": "@prb/hardhat-template",
-  "description": "Hardhat-based template for developing Solidity smart contracts",
+  "name": "@hifi/governance",
+  "description": "Hifi's token swap and governance contracts",
   "version": "1.0.0",
   "author": {
     "name": "Hifi",
