@@ -4,6 +4,8 @@ import { constants, utils } from "ethers";
 import { parseEther } from "ethers/lib/utils";
 import { ethers, network } from "hardhat";
 
+import { InvalidV, MaxUint96 } from "../constants";
+
 export function shouldBehaveLikeHifi(): void {
   const name = "Hifi Finance";
   const symbol = "HIFI";
@@ -18,9 +20,45 @@ export function shouldBehaveLikeHifi(): void {
     });
   });
 
+  describe("approve", function () {
+    describe("rawAmount == type(uint256).max", function () {
+      it("succeeds", async function () {
+        const call = await this.hifi
+          .connect(this.signers.alice)
+          .approve(this.signers.bob.address, constants.MaxUint256);
+        await expect(call)
+          .to.emit(this.hifi, "Approval")
+          .withArgs(this.signers.alice.address, this.signers.bob.address, MaxUint96);
+        expect(await this.hifi.allowance(this.signers.alice.address, this.signers.bob.address)).to.be.equal(MaxUint96);
+      });
+    });
+
+    describe("rawAmount < type(uint256).max", function () {
+      describe("rawAmount is not safe96", function () {
+        it("reverts", async function () {
+          await expect(
+            this.hifi.connect(this.signers.alice).approve(this.signers.bob.address, MaxUint96.add(1)),
+          ).to.be.revertedWith("Hifi::approve: amount exceeds 96 bits");
+        });
+      });
+
+      describe("rawAmount is safe96", function () {
+        it("succeeds", async function () {
+          const call = await this.hifi.connect(this.signers.alice).approve(this.signers.bob.address, MaxUint96);
+          await expect(call)
+            .to.emit(this.hifi, "Approval")
+            .withArgs(this.signers.alice.address, this.signers.bob.address, MaxUint96);
+          expect(await this.hifi.allowance(this.signers.alice.address, this.signers.bob.address)).to.be.equal(
+            MaxUint96,
+          );
+        });
+      });
+    });
+  });
+
   describe("balanceOf", function () {
     it("grants to initial account", async function () {
-      expect(await this.hifi.balanceOf(this.signers.admin.address)).to.equal("1000000000000000000000000000");
+      expect(await this.hifi.balanceOf(this.signers.admin.address)).to.equal("26250000000000000000000000");
     });
   });
 
@@ -44,17 +82,13 @@ export function shouldBehaveLikeHifi(): void {
     });
 
     it("burn > totalSupply", async function () {
-      await expect(this.hifi.connect(this.signers.admin).burn(this.supply.add(2))).to.be.revertedWith(
-        "Hifi::_burn: amount exceeds totalSupply",
-      );
+      await expect(this.hifi.connect(this.signers.admin).burn(this.supply.add(2))).to.be.revertedWith("0x11");
     });
 
     it("burn > balance", async function () {
       await this.hifi.connect(this.signers.admin).transfer(this.signers.alice.address, 100);
       const balanceBefore = await this.hifi.balanceOf(this.signers.admin.address);
-      await expect(this.hifi.connect(this.signers.admin).burn(balanceBefore.add(1))).to.be.revertedWith(
-        "Hifi::_burn: transfer amount overflows",
-      );
+      await expect(this.hifi.connect(this.signers.admin).burn(balanceBefore.add(1))).to.be.revertedWith("0x11");
     });
   });
 
@@ -81,7 +115,7 @@ export function shouldBehaveLikeHifi(): void {
     it("burn > approval", async function () {
       await this.hifi.connect(this.signers.admin).approve(this.signers.alice.address, 100);
       await expect(this.hifi.connect(this.signers.alice).burnFrom(this.signers.admin.address, 101)).to.be.revertedWith(
-        "Hifi::burnFrom: amount exceeds allowance",
+        "0x11",
       );
     });
 
@@ -90,7 +124,7 @@ export function shouldBehaveLikeHifi(): void {
       await this.hifi.connect(this.signers.admin).approve(this.signers.alice.address, balanceBefore.add(1));
       await expect(
         this.hifi.connect(this.signers.alice).burnFrom(this.signers.admin.address, balanceBefore.add(1)),
-      ).to.be.revertedWith("Hifi::_burn: amount exceeds totalSupply");
+      ).to.be.revertedWith("0x11");
     });
 
     it("burn > balance", async function () {
@@ -99,7 +133,7 @@ export function shouldBehaveLikeHifi(): void {
       await this.hifi.connect(this.signers.admin).approve(this.signers.alice.address, balanceBefore.add(1));
       await expect(
         this.hifi.connect(this.signers.alice).burnFrom(this.signers.admin.address, balanceBefore.add(1)),
-      ).to.be.revertedWith("Hifi::_burn: transfer amount overflows");
+      ).to.be.revertedWith("0x11");
     });
 
     it("Zero Address", async function () {
@@ -260,53 +294,127 @@ export function shouldBehaveLikeHifi(): void {
   });
 
   describe("delegateBySig", async function () {
-    it("succeeds", async function () {
+    beforeEach(async function () {
       const { chainId } = await ethers.provider.getNetwork();
-      const domain = {
+      this.domain = {
         name: "Hifi Finance",
         chainId: chainId,
         verifyingContract: this.hifi.address,
       };
-      const types = {
+      this.types = {
         Delegation: [
           { name: "delegatee", type: "address" },
           { name: "nonce", type: "uint256" },
           { name: "expiry", type: "uint256" },
         ],
       };
+      this.delegatee = this.signers.bob.address;
+    });
 
-      const delegatee = this.signers.bob.address;
-      const nonce = await this.hifi.nonces(this.signers.admin.address);
-      const expiry = constants.MaxUint256;
+    describe("recovered signatory is invalid", function () {
+      it("reverts", async function () {
+        const nonce = await this.hifi.nonces(this.signers.admin.address);
+        const expiry = constants.MaxUint256;
 
-      const value = {
-        delegatee,
-        nonce,
-        expiry,
-      };
+        const value = {
+          delegatee: this.delegatee,
+          nonce,
+          expiry,
+        };
 
-      const signature = await this.signers.admin._signTypedData(domain, types, value);
-      const { v, r, s } = ethers.utils.splitSignature(signature);
+        const signature = await this.signers.admin._signTypedData(this.domain, this.types, value);
+        const { r, s } = ethers.utils.splitSignature(signature);
 
-      expect(await this.hifi.getCurrentVotes(this.signers.bob.address)).to.be.eq(0);
+        await expect(
+          this.hifi
+            .connect(this.signers.david)
+            .delegateBySig(this.signers.bob.address, nonce, expiry, InvalidV, utils.hexlify(r), utils.hexlify(s)),
+        ).to.be.revertedWith("Hifi::delegateBySig: invalid signature");
+      });
+    });
 
-      await this.hifi
-        .connect(this.signers.david)
-        .delegateBySig(this.signers.bob.address, nonce, expiry, v, utils.hexlify(r), utils.hexlify(s));
+    describe("recovered signatory is valid", function () {
+      describe("nonce is invalid", function () {
+        it("reverts", async function () {
+          const nonce = (await this.hifi.nonces(this.signers.admin.address)).add(1);
+          const expiry = constants.MaxUint256;
 
-      expect(await this.hifi.getCurrentVotes(this.signers.bob.address)).to.be.eq(parseEther("1000000000"));
+          const value = {
+            delegatee: this.delegatee,
+            nonce,
+            expiry,
+          };
+
+          const signature = await this.signers.admin._signTypedData(this.domain, this.types, value);
+          const { v, r, s } = ethers.utils.splitSignature(signature);
+
+          await expect(
+            this.hifi
+              .connect(this.signers.david)
+              .delegateBySig(this.signers.bob.address, nonce, expiry, v, utils.hexlify(r), utils.hexlify(s)),
+          ).to.be.revertedWith("Hifi::delegateBySig: invalid nonce");
+        });
+      });
+
+      describe("nonce is valid", function () {
+        describe("signature expired", function () {
+          it("reverts", async function () {
+            const nonce = await this.hifi.nonces(this.signers.admin.address);
+            const expiry = 0;
+
+            const value = {
+              delegatee: this.delegatee,
+              nonce,
+              expiry,
+            };
+
+            const signature = await this.signers.admin._signTypedData(this.domain, this.types, value);
+            const { v, r, s } = ethers.utils.splitSignature(signature);
+
+            await expect(
+              this.hifi
+                .connect(this.signers.david)
+                .delegateBySig(this.signers.bob.address, nonce, expiry, v, utils.hexlify(r), utils.hexlify(s)),
+            ).to.be.revertedWith("Hifi::delegateBySig: signature expired");
+          });
+        });
+
+        describe("signature is not expired", function () {
+          it("succeeds", async function () {
+            const nonce = await this.hifi.nonces(this.signers.admin.address);
+            const expiry = constants.MaxUint256;
+
+            const value = {
+              delegatee: this.delegatee,
+              nonce,
+              expiry,
+            };
+
+            const signature = await this.signers.admin._signTypedData(this.domain, this.types, value);
+            const { v, r, s } = ethers.utils.splitSignature(signature);
+
+            expect(await this.hifi.getCurrentVotes(this.signers.bob.address)).to.be.eq(0);
+
+            await this.hifi
+              .connect(this.signers.david)
+              .delegateBySig(this.signers.bob.address, nonce, expiry, v, utils.hexlify(r), utils.hexlify(s));
+
+            expect(await this.hifi.getCurrentVotes(this.signers.bob.address)).to.be.eq(parseEther("26250000"));
+          });
+        });
+      });
     });
   });
 
   describe("permit", async function () {
-    it("succeeds", async function () {
+    beforeEach(async function () {
       const { chainId } = await ethers.provider.getNetwork();
-      const domain = {
+      this.domain = {
         name: "Hifi Finance",
         chainId: chainId,
         verifyingContract: this.hifi.address,
       };
-      const types = {
+      this.types = {
         Permit: [
           { name: "owner", type: "address" },
           { name: "spender", type: "address" },
@@ -315,28 +423,185 @@ export function shouldBehaveLikeHifi(): void {
           { name: "deadline", type: "uint256" },
         ],
       };
+      this.owner = this.signers.admin.address;
+      this.spender = this.signers.alice.address;
+      this.nonce = await this.hifi.nonces(this.signers.admin.address);
+      this.deadline = constants.MaxUint256;
+    });
 
-      const owner = this.signers.admin.address;
-      const spender = this.signers.alice.address;
-      const amount = 123;
-      const nonce = await this.hifi.nonces(this.signers.admin.address);
-      const deadline = constants.MaxUint256;
+    describe("rawAmount == type(uint256).max", function () {
+      it("succeeds", async function () {
+        const rawAmount = constants.MaxUint256;
 
-      const value = {
-        owner,
-        spender,
-        value: amount,
-        nonce,
-        deadline,
-      };
+        const value = {
+          owner: this.owner,
+          spender: this.spender,
+          value: rawAmount,
+          nonce: this.nonce,
+          deadline: this.deadline,
+        };
 
-      const signature = await this.signers.admin._signTypedData(domain, types, value);
-      const { v, r, s } = ethers.utils.splitSignature(signature);
-      await this.hifi.permit(owner, spender, amount, deadline, v, utils.hexlify(r), utils.hexlify(s));
-      expect(await this.hifi.allowance(owner, spender)).to.eq(amount);
-      expect(await this.hifi.nonces(owner)).to.eq(1);
+        const signature = await this.signers.admin._signTypedData(this.domain, this.types, value);
+        const { v, r, s } = ethers.utils.splitSignature(signature);
+        await this.hifi.permit(
+          this.owner,
+          this.spender,
+          rawAmount,
+          this.deadline,
+          v,
+          utils.hexlify(r),
+          utils.hexlify(s),
+        );
+        expect(await this.hifi.allowance(this.owner, this.spender)).to.eq(MaxUint96);
+        expect(await this.hifi.nonces(this.owner)).to.eq(1);
+      });
+    });
 
-      await this.hifi.connect(this.signers.alice).transferFrom(owner, spender, amount);
+    describe("rawAmount < type(uint256).max", function () {
+      describe("rawAmount is not safe96", function () {
+        it("reverts", async function () {
+          const rawAmount = MaxUint96.add(1);
+
+          const value = {
+            owner: this.owner,
+            spender: this.spender,
+            value: rawAmount,
+            nonce: this.nonce,
+            deadline: this.deadline,
+          };
+
+          const signature = await this.signers.admin._signTypedData(this.domain, this.types, value);
+          const { v, r, s } = ethers.utils.splitSignature(signature);
+
+          await expect(
+            this.hifi.permit(this.owner, this.spender, rawAmount, this.deadline, v, utils.hexlify(r), utils.hexlify(s)),
+          ).to.be.revertedWith("Hifi::permit: amount exceeds 96 bits");
+        });
+      });
+
+      describe("rawAmount is safe96", function () {
+        describe("recovered signatory is invalid", function () {
+          it("reverts", async function () {
+            const rawAmount = MaxUint96;
+
+            const value = {
+              owner: this.owner,
+              spender: this.spender,
+              value: rawAmount,
+              nonce: this.nonce,
+              deadline: this.deadline,
+            };
+
+            const signature = await this.signers.admin._signTypedData(this.domain, this.types, value);
+            const { r, s } = ethers.utils.splitSignature(signature);
+
+            await expect(
+              this.hifi.permit(
+                this.owner,
+                this.spender,
+                rawAmount,
+                this.deadline,
+                InvalidV,
+                utils.hexlify(r),
+                utils.hexlify(s),
+              ),
+            ).to.be.revertedWith("Hifi::permit: invalid signature");
+          });
+        });
+
+        describe("recovered signatory is valid", function () {
+          describe("recovered signatory is not owner", function () {
+            it("reverts", async function () {
+              const rawAmount = MaxUint96;
+
+              const value = {
+                owner: this.spender,
+                spender: this.spender,
+                value: rawAmount,
+                nonce: this.nonce,
+                deadline: this.deadline,
+              };
+
+              const signature = await this.signers.admin._signTypedData(this.domain, this.types, value);
+              const { v, r, s } = ethers.utils.splitSignature(signature);
+
+              await expect(
+                this.hifi.permit(
+                  this.owner,
+                  this.spender,
+                  rawAmount,
+                  this.deadline,
+                  v,
+                  utils.hexlify(r),
+                  utils.hexlify(s),
+                ),
+              ).to.be.revertedWith("Hifi::permit: unauthorized");
+            });
+          });
+
+          describe("recovered signatory is owner", function () {
+            describe("signature expired", function () {
+              it("reverts", async function () {
+                const rawAmount = MaxUint96;
+                this.deadline = 0;
+
+                const value = {
+                  owner: this.owner,
+                  spender: this.spender,
+                  value: rawAmount,
+                  nonce: this.nonce,
+                  deadline: this.deadline,
+                };
+
+                const signature = await this.signers.admin._signTypedData(this.domain, this.types, value);
+                const { v, r, s } = ethers.utils.splitSignature(signature);
+
+                await expect(
+                  this.hifi.permit(
+                    this.owner,
+                    this.spender,
+                    rawAmount,
+                    this.deadline,
+                    v,
+                    utils.hexlify(r),
+                    utils.hexlify(s),
+                  ),
+                ).to.be.revertedWith("Hifi::permit: signature expired");
+              });
+            });
+
+            describe("signature is not expired", function () {
+              it("succeeds", async function () {
+                const rawAmount = 123;
+
+                const value = {
+                  owner: this.owner,
+                  spender: this.spender,
+                  value: rawAmount,
+                  nonce: this.nonce,
+                  deadline: this.deadline,
+                };
+
+                const signature = await this.signers.admin._signTypedData(this.domain, this.types, value);
+                const { v, r, s } = ethers.utils.splitSignature(signature);
+                await this.hifi.permit(
+                  this.owner,
+                  this.spender,
+                  rawAmount,
+                  this.deadline,
+                  v,
+                  utils.hexlify(r),
+                  utils.hexlify(s),
+                );
+                expect(await this.hifi.allowance(this.owner, this.spender)).to.eq(rawAmount);
+                expect(await this.hifi.nonces(this.owner)).to.eq(1);
+
+                await this.hifi.connect(this.signers.alice).transferFrom(this.owner, this.spender, rawAmount);
+              });
+            });
+          });
+        });
+      });
     });
   });
 
@@ -397,6 +662,40 @@ export function shouldBehaveLikeHifi(): void {
     });
   });
 
+  describe("transferFrom", async function () {
+    describe("src == address(0)", function () {
+      it("reverts", async function () {
+        const signer = await ethers.getSigner(constants.AddressZero);
+        await network.provider.request({
+          method: "hardhat_impersonateAccount",
+          params: [constants.AddressZero],
+        });
+        await expect(
+          this.hifi.connect(signer).transferFrom(constants.AddressZero, this.signers.bob.address, 1),
+        ).to.be.revertedWith("Hifi::_transferTokens: cannot transfer from the zero address");
+      });
+    });
+
+    describe("dst == address(0)", function () {
+      it("reverts", async function () {
+        await expect(
+          this.hifi.connect(this.signers.admin).transferFrom(this.signers.admin.address, constants.AddressZero, 1),
+        ).to.be.revertedWith("Hifi::_transferTokens: cannot transfer to the zero address");
+      });
+    });
+
+    describe("spender == src", function () {
+      it("succeeds", async function () {
+        const call = this.hifi
+          .connect(this.signers.admin)
+          .transferFrom(this.signers.admin.address, this.signers.bob.address, 1);
+        await expect(call)
+          .to.emit(this.hifi, "Transfer")
+          .withArgs(this.signers.admin.address, this.signers.bob.address, 1);
+      });
+    });
+  });
+
   describe("getCurrentVotes", function () {
     describe("nCheckpoints > 0", function () {
       beforeEach(async function () {
@@ -433,10 +732,10 @@ export function shouldBehaveLikeHifi(): void {
       await network.provider.send("evm_mine");
 
       expect(await this.hifi.getPriorVotes(this.signers.alice.address, t1.blockNumber as number)).to.be.equal(
-        "1000000000000000000000000000",
+        "26250000000000000000000000",
       );
       expect(await this.hifi.getPriorVotes(this.signers.alice.address, (t1.blockNumber as number) + 1)).to.be.equal(
-        "1000000000000000000000000000",
+        "26250000000000000000000000",
       );
     });
 
@@ -450,7 +749,7 @@ export function shouldBehaveLikeHifi(): void {
         "0",
       );
       expect(await this.hifi.getPriorVotes(this.signers.alice.address, (t1.blockNumber as number) + 1)).to.be.equal(
-        "1000000000000000000000000000",
+        "26250000000000000000000000",
       );
     });
 
@@ -472,31 +771,31 @@ export function shouldBehaveLikeHifi(): void {
         "0",
       );
       expect(await this.hifi.getPriorVotes(this.signers.alice.address, t1.blockNumber as number)).to.be.equal(
-        "1000000000000000000000000000",
+        "26250000000000000000000000",
       );
       expect(await this.hifi.getPriorVotes(this.signers.alice.address, (t1.blockNumber as number) + 1)).to.be.equal(
-        "1000000000000000000000000000",
+        "26250000000000000000000000",
       );
 
       expect(await this.hifi.getPriorVotes(this.signers.alice.address, t2.blockNumber as number)).to.be.equal(
-        "999999999999999999999999990",
+        "26249999999999999999999990",
       );
       expect(await this.hifi.getPriorVotes(this.signers.alice.address, (t2.blockNumber as number) + 1)).to.be.equal(
-        "999999999999999999999999990",
+        "26249999999999999999999990",
       );
 
       expect(await this.hifi.getPriorVotes(this.signers.alice.address, t3.blockNumber as number)).to.be.equal(
-        "999999999999999999999999980",
+        "26249999999999999999999980",
       );
       expect(await this.hifi.getPriorVotes(this.signers.alice.address, (t3.blockNumber as number) + 1)).to.be.equal(
-        "999999999999999999999999980",
+        "26249999999999999999999980",
       );
 
       expect(await this.hifi.getPriorVotes(this.signers.alice.address, t4.blockNumber as number)).to.be.equal(
-        "1000000000000000000000000000",
+        "26250000000000000000000000",
       );
       expect(await this.hifi.getPriorVotes(this.signers.alice.address, (t4.blockNumber as number) + 1)).to.be.equal(
-        "1000000000000000000000000000",
+        "26250000000000000000000000",
       );
     });
   });

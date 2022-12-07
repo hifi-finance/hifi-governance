@@ -1,6 +1,6 @@
 import { defaultAbiCoder } from "@ethersproject/abi";
 import { expect } from "chai";
-import { constants } from "ethers";
+import { constants, utils } from "ethers";
 import { parseEther } from "ethers/lib/utils";
 import { ethers, network } from "hardhat";
 
@@ -105,6 +105,48 @@ export function shouldBehaveLikeGovernorBravo(): void {
                 "0x0000000000000000000000000000000000000000000000000000000000000bad",
               ),
             ).to.be.revertedWith("GovernorBravo::castVoteBySig: invalid signature");
+          });
+
+          it("succeeds if the signatory is valid", async function () {
+            await this.hifi.transfer(this.signers.bob.address, parseEther("400001"));
+            await this.hifi.connect(this.signers.bob).delegate(this.signers.bob.address);
+
+            await this.governorBravo
+              .connect(this.signers.bob)
+              .propose(this.targets, this.values, this.signatures, this.callDatas, "do nothing");
+
+            this.proposalId = await this.governorBravo.latestProposalIds(this.signers.bob.address);
+
+            const beforeFors = (await this.governorBravo.proposals(this.proposalId)).forVotes;
+
+            await network.provider.send("evm_mine");
+
+            const { chainId } = await ethers.provider.getNetwork();
+            const domain = {
+              name: "Hifi Governor Bravo",
+              chainId: chainId,
+              verifyingContract: this.governorBravo.address,
+            };
+            const types = {
+              Ballot: [
+                { name: "proposalId", type: "uint256" },
+                { name: "support", type: "uint8" },
+              ],
+            };
+            const value = {
+              proposalId: this.proposalId,
+              support: 2,
+            };
+            const signature = await this.signers.bob._signTypedData(domain, types, value);
+            const { v, r, s } = ethers.utils.splitSignature(signature);
+
+            await this.governorBravo
+              .connect(this.signers.alice)
+              .castVoteBySig(this.proposalId, 2, v, utils.hexlify(r), utils.hexlify(s));
+
+            const afterFors = (await this.governorBravo.proposals(this.proposalId)).abstainVotes;
+
+            expect(afterFors).to.be.equal(beforeFors.add(parseEther("400001")));
           });
         });
       });
@@ -504,20 +546,32 @@ export function shouldBehaveLikeGovernorBravo(): void {
   });
 
   describe("_setVotingPeriod", function () {
-    describe("msg.sender != admin", function () {
+    describe("newVotingPeriod is not within thresholds", function () {
       it("reverts", async function () {
-        await expect(this.governorBravo.connect(this.signers.alice)._setVotingPeriod(0)).to.be.revertedWith(
-          "GovernorBravo::_setVotingPeriod: admin only",
+        await expect(this.governorBravo.connect(this.signers.admin)._setVotingPeriod(0)).to.be.revertedWith(
+          "GovernorBravo::_setVotingPeriod: invalid voting period",
         );
       });
     });
 
-    describe("msg.sender == admin", function () {
-      it("succeeds", async function () {
-        const votingPeriodBefore = await this.governorBravo.votingPeriod();
-        const newVotingPeriod = await this.governorBravo.MIN_VOTING_PERIOD();
-        const call = await this.governorBravo._setVotingPeriod(newVotingPeriod);
-        await expect(call).to.emit(this.governorBravo, "VotingPeriodSet").withArgs(votingPeriodBefore, newVotingPeriod);
+    describe("newVotingPeriod is within thresholds", function () {
+      describe("msg.sender != admin", function () {
+        it("reverts", async function () {
+          await expect(this.governorBravo.connect(this.signers.alice)._setVotingPeriod(0)).to.be.revertedWith(
+            "GovernorBravo::_setVotingPeriod: admin only",
+          );
+        });
+      });
+
+      describe("msg.sender == admin", function () {
+        it("succeeds", async function () {
+          const votingPeriodBefore = await this.governorBravo.votingPeriod();
+          const newVotingPeriod = await this.governorBravo.MIN_VOTING_PERIOD();
+          const call = await this.governorBravo._setVotingPeriod(newVotingPeriod);
+          await expect(call)
+            .to.emit(this.governorBravo, "VotingPeriodSet")
+            .withArgs(votingPeriodBefore, newVotingPeriod);
+        });
       });
     });
   });
