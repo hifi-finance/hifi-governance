@@ -2,6 +2,16 @@ import { expect } from "chai";
 import { ethers, network } from "hardhat";
 
 export function shouldBehaveLikeTimelock(): void {
+  describe("acceptAdmin", function () {
+    describe("msg.sender != pendingAdmin", function () {
+      it("reverts", async function () {
+        await expect(this.timelock.connect(this.signers.admin).acceptAdmin()).to.be.revertedWith(
+          "Timelock::acceptAdmin: Call must come from pendingAdmin.",
+        );
+      });
+    });
+  });
+
   describe("setDelay", function () {
     describe("msg.sender != address(this)", function () {
       it("reverts", async function () {

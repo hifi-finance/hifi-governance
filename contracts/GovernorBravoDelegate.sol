@@ -63,6 +63,8 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         require(msg.sender == admin, "GovernorBravo::initialize: admin only");
         require(timelock_ != address(0), "GovernorBravo::initialize: invalid timelock address");
         require(hifi_ != address(0), "GovernorBravo::initialize: invalid hifi address");
+        hifi = HifiInterface(hifi_);
+
         require(
             votingPeriod_ >= MIN_VOTING_PERIOD && votingPeriod_ <= MAX_VOTING_PERIOD,
             "GovernorBravo::initialize: invalid voting period"
@@ -71,6 +73,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
             votingDelay_ >= MIN_VOTING_DELAY && votingDelay_ <= MAX_VOTING_DELAY,
             "GovernorBravo::initialize: invalid voting delay"
         );
+
         require(
             proposalThreshold_ >= MIN_PROPOSAL_THRESHOLD() && proposalThreshold_ <= MAX_PROPOSAL_THRESHOLD(),
             "GovernorBravo::initialize: invalid proposal threshold"
@@ -78,7 +81,6 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
 
         timelock = TimelockInterface(timelock_);
         timelock.acceptAdmin();
-        hifi = HifiInterface(hifi_);
         votingPeriod = votingPeriod_;
         votingDelay = votingDelay_;
         proposalThreshold = proposalThreshold_;

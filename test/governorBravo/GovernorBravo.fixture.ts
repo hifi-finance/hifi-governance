@@ -51,6 +51,7 @@ export async function deployGovernorBravoFixture(): Promise<{
   const governorBravo__factory: GovernorBravoProxy__factory = <GovernorBravoProxy__factory>(
     await ethers.getContractFactory("GovernorBravoDelegator")
   );
+  const proposalThreshold = (await godModeHifi.totalSupply()).div(10000);
   const governorBravoProxy: GovernorBravoProxy = <GovernorBravoProxy>(
     await governorBravo__factory
       .connect(admin)
@@ -61,7 +62,7 @@ export async function deployGovernorBravoFixture(): Promise<{
         governorBravoImplementation.address,
         5760,
         1,
-        "75000000000000000000000",
+        proposalThreshold,
       )
   );
   await governorBravoProxy.deployed();
