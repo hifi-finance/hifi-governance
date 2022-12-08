@@ -82,13 +82,17 @@ export function shouldBehaveLikeHifi(): void {
     });
 
     it("burn > totalSupply", async function () {
-      await expect(this.hifi.connect(this.signers.admin).burn(this.supply.add(2))).to.be.revertedWith("0x11");
+      await expect(this.hifi.connect(this.signers.admin).burn(this.supply.add(2))).to.be.revertedWith(
+        "0x11 (Arithmetic operation underflowed or overflowed outside of an unchecked block)",
+      );
     });
 
     it("burn > balance", async function () {
       await this.hifi.connect(this.signers.admin).transfer(this.signers.alice.address, 100);
       const balanceBefore = await this.hifi.balanceOf(this.signers.admin.address);
-      await expect(this.hifi.connect(this.signers.admin).burn(balanceBefore.add(1))).to.be.revertedWith("0x11");
+      await expect(this.hifi.connect(this.signers.admin).burn(balanceBefore.add(1))).to.be.revertedWith(
+        "0x11 (Arithmetic operation underflowed or overflowed outside of an unchecked block)",
+      );
     });
   });
 
@@ -115,7 +119,7 @@ export function shouldBehaveLikeHifi(): void {
     it("burn > approval", async function () {
       await this.hifi.connect(this.signers.admin).approve(this.signers.alice.address, 100);
       await expect(this.hifi.connect(this.signers.alice).burnFrom(this.signers.admin.address, 101)).to.be.revertedWith(
-        "0x11",
+        "0x11 (Arithmetic operation underflowed or overflowed outside of an unchecked block)",
       );
     });
 
@@ -124,7 +128,7 @@ export function shouldBehaveLikeHifi(): void {
       await this.hifi.connect(this.signers.admin).approve(this.signers.alice.address, balanceBefore.add(1));
       await expect(
         this.hifi.connect(this.signers.alice).burnFrom(this.signers.admin.address, balanceBefore.add(1)),
-      ).to.be.revertedWith("0x11");
+      ).to.be.revertedWith("0x11 (Arithmetic operation underflowed or overflowed outside of an unchecked block)");
     });
 
     it("burn > balance", async function () {
@@ -133,7 +137,7 @@ export function shouldBehaveLikeHifi(): void {
       await this.hifi.connect(this.signers.admin).approve(this.signers.alice.address, balanceBefore.add(1));
       await expect(
         this.hifi.connect(this.signers.alice).burnFrom(this.signers.admin.address, balanceBefore.add(1)),
-      ).to.be.revertedWith("0x11");
+      ).to.be.revertedWith("0x11 (Arithmetic operation underflowed or overflowed outside of an unchecked block)");
     });
 
     it("Zero Address", async function () {
