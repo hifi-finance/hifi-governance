@@ -94,7 +94,7 @@ The smart contracts need to be deployed in the following order:
 #### Hifi Token
 
 ```sh
-$ yarn hardhat deploy:contract:hifi-token --account ${ACCOUNT} --minter ${MINTER} --network ${NETWORK_NAME} --confirmations 5 --print true --verify true
+$ yarn hardhat deploy:contract:hifi --account ${ACCOUNT} --minter ${MINTER} --network ${NETWORK_NAME} --confirmations 5 --print true --verify true
 ```
 
 #### Timelock
