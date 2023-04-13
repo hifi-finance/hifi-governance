@@ -12,14 +12,25 @@ The foundation of our governance contracts came from the Ampleforth fork of Gove
 
 ## Usage
 
-### Pre Requisites
+### Prerequisites
+
+- NVM
+- Yarn package manager
 
 Before being able to run any command, you need to create a `.env` file and set a BIP-39 compatible mnemonic as an environment
 variable. You can follow the example in `.env.example`. If you don't already have a mnemonic, you can use this [website](https://iancoleman.io/bip39/) to generate one.
 
-Then, proceed with installing dependencies:
+Then, proceed with the following:
 
-```sh
+1. Set the version of Node to use locally within the project:
+
+```bash
+$ nvm use
+```
+
+2. Install the dependencies with Yarn:
+
+```bash
 $ yarn install
 ```
 
