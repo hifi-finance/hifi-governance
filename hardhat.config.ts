@@ -3,7 +3,8 @@ import "@nomiclabs/hardhat-waffle";
 import { config as dotenvConfig } from "dotenv";
 import type { HardhatUserConfig } from "hardhat/config";
 import type { NetworkUserConfig } from "hardhat/types";
-import { resolve } from "path";
+import { relative, resolve } from "path";
+import "solidity-docgen";
 
 import "./tasks/deploy";
 
@@ -63,6 +64,14 @@ function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
+  docgen: {
+    templates: "./templates",
+    pages: (_item, file) => {
+      return file.absolutePath.startsWith("contracts")
+        ? relative("contracts", file.absolutePath).replace(".sol", ".md")
+        : undefined;
+    },
+  },
   etherscan: {
     apiKey: {
       arbitrumOne: process.env.ARBISCAN_API_KEY || "",

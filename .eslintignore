@@ -8,7 +8,9 @@
 **/cache
 **/coverage
 **/dist
+**/docs
 **/node_modules
+**/templates
 **/types
 
 # files
